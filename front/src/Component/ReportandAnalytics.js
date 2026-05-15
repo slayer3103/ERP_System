@@ -26,17 +26,17 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import Sidebar from './Sidebar';
 import UserMenu from './UserMenu';
 
-// Map every report label to a route.
+// Map every report label to its dedicated route (must match App.js routes).
 const REPORT_ROUTES = {
-  'Sales By Customers': '/report/sales-by-customers',
-  'Sales By Products': '/report/sales-by-products',
+  'Sales By Customers': '/sales-by-customers',
+  'Sales By Products': '/sales-by-products',
   'Sales By Time Period': '/sales-analytics',
-  'GST Summery': '/report/gst-summary',
-  'Tax Liability Reports': '/report/tax-liability',
-  'Outstanding Invoices': '/report/outstanding-invoices',
-  'Payment Receipts': '/report/payment-receipts',
-  'PO Summaries': '/report/po-summaries',
-  'Vendor Spend Analysis': '/report/vendor-spend',
+  'GST Summery': '/gst-summary',
+  'Tax Liability Reports': '/tax-liability',
+  'Outstanding Invoices': '/outstanding-invoices',
+  'Payment Receipts': '/payment-receipts',
+  'PO Summaries': '/po-summaries',
+  'Vendor Spend Analysis': '/vendor-spend-analysis',
 };
 
 const getReportIcon = (reportName) => {
