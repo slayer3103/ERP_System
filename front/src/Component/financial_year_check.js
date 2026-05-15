@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import BASE_URL from '../config/api';
 
 const FinancialYearGuard = ({ children }) => {
   const [loading, setLoading] = useState(true);
@@ -11,7 +12,7 @@ const FinancialYearGuard = ({ children }) => {
   useEffect(() => {
     const checkActiveYear = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/financialYear/active');
+        const res = await axios.get(`${BASE_URL}/financialYear/active`);
         if (res.data.active && res.data.active.length > 0) {
           console.log('Active financial year found:', res.data.active);
           setHasActiveYear(true);

@@ -82,6 +82,10 @@ app.use('/api/work-orders', workOrderRoutes);
 const paymentEntriesRoutes = require('./routes/paymentEntries');
 app.use('/api/payment-entries', paymentEntriesRoutes);
 
+// Analytics routes: for /api/analytics
+const analyticsRoutes = require('./routes/analytics');
+app.use('/api/analytics', analyticsRoutes);
+
 
 
 

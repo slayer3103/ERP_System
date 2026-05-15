@@ -36,7 +36,16 @@ import FinancialYearSettings from './Component/Financialyearsetting';
 import PaymentsSettings from './Component/Paymentsetting';
 import AddPaymentsEntry from './Component/Addpaymententry';
 import ReportsAndAnalytics from './Component/ReportandAnalytics';
+import ReportView from './Component/ReportView';
 import SalesAnalytics from './Component/SalesAnalytics';
+import SalesByCustomers from './Component/SalesByCustomers';
+import SalesByProducts from './Component/SalesByProducts';
+import GstSummary from './Component/GstSummary';
+import TaxLiability from './Component/TaxLiability';
+import OutstandingInvoices from './Component/OutstandingInvoices';
+import PaymentReceipts from './Component/PaymentReceipts';
+import POSummaries from './Component/POSummaries';
+import VendorSpendAnalysis from './Component/VendorSpendAnalysis';
 import FinancialYearGuard from './Component/financial_year_check';
 import AddFinancialYear from './Component/add_financial_year';
 import FinancialYearMain from './Component/financial-year-home';
@@ -256,6 +265,51 @@ function App() {
           <Route path="/sales-analytics" element={
             <ProtectedRoute>
               <SalesAnalytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/sales-by-customers" element={
+            <ProtectedRoute>
+              <SalesByCustomers />
+            </ProtectedRoute>
+          } />
+          <Route path="/sales-by-products" element={
+            <ProtectedRoute>
+              <SalesByProducts />
+            </ProtectedRoute>
+          } />
+          <Route path="/gst-summary" element={
+            <ProtectedRoute>
+              <GstSummary />
+            </ProtectedRoute>
+          } />
+          <Route path="/tax-liability" element={
+            <ProtectedRoute>
+              <TaxLiability />
+            </ProtectedRoute>
+          } />
+          <Route path="/outstanding-invoices" element={
+            <ProtectedRoute>
+              <OutstandingInvoices />
+            </ProtectedRoute>
+          } />
+          <Route path="/report/:reportKey" element={
+            <ProtectedRoute>
+              <ReportView />
+            </ProtectedRoute>
+          } />
+          <Route path="/payment-receipts" element={
+            <ProtectedRoute>
+              <PaymentReceipts />
+            </ProtectedRoute>
+          } />
+          <Route path="/po-summaries" element={
+            <ProtectedRoute>
+              <POSummaries />
+            </ProtectedRoute>
+          } />
+          <Route path="/vendor-spend-analysis" element={
+            <ProtectedRoute>
+              <VendorSpendAnalysis />
             </ProtectedRoute>
           } />
           <Route path="/add/financial_year" element={
