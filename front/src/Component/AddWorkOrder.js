@@ -72,6 +72,7 @@ const NewWorkOrder = () => {
   const [status, setStatus] = useState('Draft');
   const [purchaseordernumber, setpurchaseordernumber] = useState('');
   const [purchaseorderdate, setpurchaseorderdate] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   const [products, setProducts] = useState([]);
   const [units, setUnits] = useState([]);
@@ -171,7 +172,76 @@ const NewWorkOrder = () => {
     setTotal(newTotal);
   }, [rows]);
 
+  const validate = () => {
+    let tempErrors = {};
+    let isValid = true;
+
+    if (!workOrderNumber.trim()) {
+      tempErrors.workOrderNumber = 'Work Order Number is required';
+      isValid = false;
+    }
+    if (!purchaseorderdate) {
+      tempErrors.purchaseorderdate = 'PO Date is required';
+      isValid = false;
+    }
+    if (!selectedVendor) {
+      tempErrors.selectedVendor = 'Vendor Name is required';
+      isValid = false;
+    }
+    if (!workOrderDate) {
+      tempErrors.workOrderDate = 'Work Order Date is required';
+      isValid = false;
+    }
+    if (!dueDate) {
+      tempErrors.dueDate = 'Due Date is required';
+      isValid = false;
+    } else if (new Date(dueDate) < new Date(workOrderDate)) {
+      tempErrors.dueDate = 'Due Date cannot be before Work Order Date';
+      isValid = false;
+    }
+    if (!paymentTerms) {
+      tempErrors.paymentTerms = 'Payment Terms are required';
+      isValid = false;
+    }
+
+    if (purchaseorderdate && new Date(purchaseorderdate) > new Date(workOrderDate)) {
+        tempErrors.purchaseorderdate = 'PO Date cannot be after Work Order Date';
+        isValid = false;
+    }
+
+    if (rows.length === 0) {
+      alert("Please add at least one item.");
+      isValid = false;
+    } else {
+      for (let i = 0; i < rows.length; i++) {
+        if (!rows[i].item) {
+          alert(`Please select an item in row ${i + 1}`);
+          isValid = false;
+          break;
+        }
+        if (rows[i].qty <= 0) {
+          alert(`Quantity must be greater than 0 in row ${i + 1}`);
+          isValid = false;
+          break;
+        }
+        if (rows[i].rate < 0) {
+          alert(`Rate cannot be negative in row ${i + 1}`);
+          isValid = false;
+          break;
+        }
+      }
+    }
+
+    setFieldErrors(tempErrors);
+    return isValid;
+  };
+
   const handleSubmit = () => {
+    if (!validate()) {
+      alert("Please correct the errors in the form before submitting.");
+      return;
+    }
+    
     const workOrderData = {
       work_order_number: workOrderNumber,
       vendor_name: selectedVendor,
@@ -301,12 +371,10 @@ const NewWorkOrder = () => {
           
          
             <Grid container spacing={2}>
-             <Grid item xs={12} sm={6} md={2}>
+              <Grid item xs={12} sm={6} md={2}>
                 <TextField
                   fullWidth
                   label="purchase order number"
-                  
-                  
                   value={purchaseordernumber}
                   onChange={(e) => setpurchaseordernumber(e.target.value)}
                    sx={{
@@ -326,7 +394,12 @@ const NewWorkOrder = () => {
                   label="purchase order date"
                   type="date"
                   value={purchaseorderdate}
-                  onChange={(e) => setpurchaseorderdate(e.target.value)}
+                  onChange={(e) => {
+                    setpurchaseorderdate(e.target.value);
+                    if (fieldErrors.purchaseorderdate) setFieldErrors({...fieldErrors, purchaseorderdate: ''});
+                  }}
+                  error={!!fieldErrors.purchaseorderdate}
+                  helperText={fieldErrors.purchaseorderdate}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     sx: {
@@ -343,7 +416,12 @@ const NewWorkOrder = () => {
                 required
                 label="Work Order Number"
                 value={workOrderNumber}
-                onChange={(e) => setWorkOrderNumber(e.target.value)}
+                onChange={(e) => {
+                  setWorkOrderNumber(e.target.value);
+                  if (fieldErrors.workOrderNumber) setFieldErrors({...fieldErrors, workOrderNumber: ''});
+                }}
+                error={!!fieldErrors.workOrderNumber}
+                helperText={fieldErrors.workOrderNumber}
                 sx={{
                   width: 500,
                   '& .MuiOutlinedInput-root': {
@@ -356,11 +434,14 @@ const NewWorkOrder = () => {
 
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required error={!!fieldErrors.selectedVendor}>
                   <InputLabel>Vendor Name</InputLabel>
                   <Select
                     value={selectedVendor}
-                    onChange={(e) => setSelectedVendor(e.target.value)}
+                    onChange={(e) => {
+                      setSelectedVendor(e.target.value);
+                      if (fieldErrors.selectedVendor) setFieldErrors({...fieldErrors, selectedVendor: ''});
+                    }}
                     displayEmpty
                     sx={{
                       bgcolor: '#f9fafb',
@@ -378,6 +459,11 @@ const NewWorkOrder = () => {
                       ))
                     )}
                   </Select>
+                  {fieldErrors.selectedVendor && (
+                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                      {fieldErrors.selectedVendor}
+                    </Typography>
+                  )}
                 </FormControl>
                 <Box mt={1}>
                   <Button
@@ -397,7 +483,12 @@ const NewWorkOrder = () => {
                   label="Work Order Date"
                   type="date"
                   value={workOrderDate}
-                  onChange={(e) => setWorkOrderDate(e.target.value)}
+                  onChange={(e) => {
+                    setWorkOrderDate(e.target.value);
+                    if (fieldErrors.workOrderDate) setFieldErrors({...fieldErrors, workOrderDate: ''});
+                  }}
+                  error={!!fieldErrors.workOrderDate}
+                  helperText={fieldErrors.workOrderDate}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     sx: {
@@ -410,12 +501,15 @@ const NewWorkOrder = () => {
               </Grid>
 
               <Grid item xs={12} sm={6} md={2}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required error={!!fieldErrors.paymentTerms}>
                   <InputLabel>Payment Terms</InputLabel>
                   <Select
                     label="Payment Terms"
                     value={paymentTerms}
-                    onChange={(e) => setPaymentTerms(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentTerms(e.target.value);
+                      if (fieldErrors.paymentTerms) setFieldErrors({...fieldErrors, paymentTerms: ''});
+                    }}
                     sx={{
                       bgcolor: '#f9fafb',
                       borderRadius: '12px',
@@ -426,6 +520,11 @@ const NewWorkOrder = () => {
                     <MenuItem value="Net 15">Net 15</MenuItem>
                     <MenuItem value="Net 30">Net 30</MenuItem>
                   </Select>
+                  {fieldErrors.paymentTerms && (
+                    <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                      {fieldErrors.paymentTerms}
+                    </Typography>
+                  )}
                 </FormControl>
               </Grid>
 
@@ -436,7 +535,12 @@ const NewWorkOrder = () => {
                   label="Due Date"
                   type="date"
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
+                  onChange={(e) => {
+                    setDueDate(e.target.value);
+                    if (fieldErrors.dueDate) setFieldErrors({...fieldErrors, dueDate: ''});
+                  }}
+                  error={!!fieldErrors.dueDate}
+                  helperText={fieldErrors.dueDate}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     sx: {

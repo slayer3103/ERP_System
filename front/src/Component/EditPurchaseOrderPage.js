@@ -29,6 +29,7 @@ export default function EditPurchaseOrderPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [vendors, setVendors] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
 
   // Fetch PO
@@ -78,8 +79,29 @@ export default function EditPurchaseOrderPage() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const validate = () => {
+    const e = {};
+    if (!formData.vendor_name) e.vendor_name = "Vendor is required";
+    if (!formData.created_date) e.created_date = "Created date is required";
+    if (!formData.delivery_date) e.delivery_date = "Delivery date is required";
+    else if (new Date(formData.delivery_date) < new Date(formData.created_date)) e.delivery_date = "Delivery date cannot be before created date";
+    
+    if (formData.bill_amount !== "" && (isNaN(formData.bill_amount) || parseFloat(formData.bill_amount) < 0)) e.bill_amount = "Bill amount must be non-negative";
+    if (formData.freight !== "" && (isNaN(formData.freight) || parseFloat(formData.freight) < 0)) e.freight = "Freight must be non-negative";
+    if (formData.customer_notes && formData.customer_notes.length > 500) e.customer_notes = "Notes cannot exceed 500 characters";
+
+    return e;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      setError("Please correct the highlighted errors");
+      return;
+    }
+    setFieldErrors({});
     setLoading(true);
     setError('');
     try {
@@ -143,7 +165,7 @@ export default function EditPurchaseOrderPage() {
               margin="normal"
               disabled
             />
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" error={!!fieldErrors.vendor_name}>
               <InputLabel>Vendor</InputLabel>
               <Select
                 name="vendor_name"
@@ -156,6 +178,7 @@ export default function EditPurchaseOrderPage() {
                     vendor_name: e.target.value,
                     vendor_id: selectedVendor ? selectedVendor.vendor_id : null
                   });
+                  if (fieldErrors.vendor_name) setFieldErrors({ ...fieldErrors, vendor_name: '' });
                 }}
               >
                 {vendors.map(vendor => (
@@ -167,6 +190,11 @@ export default function EditPurchaseOrderPage() {
                   <MenuItem value={formData.vendor_name}>{formData.vendor_name}</MenuItem>
                 )}
               </Select>
+              {fieldErrors.vendor_name && (
+                <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                  {fieldErrors.vendor_name}
+                </Typography>
+              )}
             </FormControl>
             <TextField
               fullWidth
@@ -174,7 +202,12 @@ export default function EditPurchaseOrderPage() {
               label="Created Date"
               type="date"
               value={formData.created_date ? formData.created_date.slice(0, 10) : ''}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                if (fieldErrors.created_date) setFieldErrors({ ...fieldErrors, created_date: '' });
+              }}
+              error={!!fieldErrors.created_date}
+              helperText={fieldErrors.created_date || ''}
               margin="normal"
               InputLabelProps={{ shrink: true }}
             />
@@ -184,7 +217,12 @@ export default function EditPurchaseOrderPage() {
               label="Delivery Date"
               type="date"
               value={formData.delivery_date ? formData.delivery_date.slice(0, 10) : ''}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                if (fieldErrors.delivery_date) setFieldErrors({ ...fieldErrors, delivery_date: '' });
+              }}
+              error={!!fieldErrors.delivery_date}
+              helperText={fieldErrors.delivery_date || ''}
               margin="normal"
               InputLabelProps={{ shrink: true }}
             />
@@ -207,7 +245,12 @@ export default function EditPurchaseOrderPage() {
               name="bill_amount"
               label="Bill Amount"
               value={formData.bill_amount}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                if (fieldErrors.bill_amount) setFieldErrors({ ...fieldErrors, bill_amount: '' });
+              }}
+              error={!!fieldErrors.bill_amount}
+              helperText={fieldErrors.bill_amount || ''}
               margin="normal"
               type="number"
             />
@@ -224,7 +267,12 @@ export default function EditPurchaseOrderPage() {
               name="customer_notes"
               label="Customer Notes"
               value={formData.customer_notes}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                if (fieldErrors.customer_notes) setFieldErrors({ ...fieldErrors, customer_notes: '' });
+              }}
+              error={!!fieldErrors.customer_notes}
+              helperText={fieldErrors.customer_notes || ''}
               margin="normal"
               multiline
               rows={3}
@@ -234,7 +282,12 @@ export default function EditPurchaseOrderPage() {
               name="freight"
               label="Freight"
               value={formData.freight}
-              onChange={handleChange}
+              onChange={(e) => {
+                handleChange(e);
+                if (fieldErrors.freight) setFieldErrors({ ...fieldErrors, freight: '' });
+              }}
+              error={!!fieldErrors.freight}
+              helperText={fieldErrors.freight || ''}
               margin="normal"
               type="number"
             />

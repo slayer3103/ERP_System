@@ -51,6 +51,7 @@ export default function NewVendorForm() {
 
   // Add this state (baki sab same)
 const [copyBilling, setCopyBilling] = useState(false);
+const [fieldErrors, setFieldErrors] = useState({});
 
 // Add this function (kisi bhi jagah, handleSave ke upar)
 const handleCopyBilling = (checked) => {
@@ -70,7 +71,43 @@ const handleCopyBilling = (checked) => {
 
   const API_URL = "http://localhost:5000/api/vendors";
 
+  const validate = () => {
+    const e = {};
+    if (!vendorName || !vendorName.trim()) e.vendorName = "Primary Contact Name is required";
+    if (!companyName || !companyName.trim()) e.companyName = "Company Name is required";
+    
+    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = "Invalid email address";
+    if (companyPhone && companyPhone.length < 10) e.companyPhone = "Phone number must be at least 10 digits";
+
+    if (panNumber && !panFormat(panNumber)) e.panNumber = "Invalid PAN Number format";
+    if (gstNumber && !gstFormat(gstNumber)) e.gstNumber = "Invalid GST Number format";
+
+    if (!billingRecipient || !billingRecipient.trim()) e.billingRecipient = "Billing recipient is required";
+    if (!billingCountry) e.billingCountry = "Billing country is required";
+    if (!billingAddress1 || !billingAddress1.trim()) e.billingAddress1 = "Billing Address 1 is required";
+    if (!billingCity || !billingCity.trim()) e.billingCity = "Billing City is required";
+    if (!billingState || !billingState.trim()) e.billingState = "Billing State is required";
+    if (!billingPinCode || !billingPinCode.trim()) e.billingPinCode = "Billing Pincode is required";
+
+    if (!shippingRecipient || !shippingRecipient.trim()) e.shippingRecipient = "Shipping recipient is required";
+    if (!shippingCountry) e.shippingCountry = "Shipping country is required";
+    if (!shippingAddress1 || !shippingAddress1.trim()) e.shippingAddress1 = "Shipping Address 1 is required";
+    if (!shippingCity || !shippingCity.trim()) e.shippingCity = "Shipping City is required";
+    if (!shippingState || !shippingState.trim()) e.shippingState = "Shipping State is required";
+    if (!shippingPinCode || !shippingPinCode.trim()) e.shippingPinCode = "Shipping Pincode is required";
+    
+    return e;
+  };
+
   const handleSave = async () => {
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      alert("Please fix the highlighted errors");
+      return;
+    }
+    setFieldErrors({});
+
     const vendorData = {
       vendor_name: vendorName,
       company_name: companyName,
@@ -220,11 +257,15 @@ const handleCopyBilling = (checked) => {
                     },
                   }}
                   fullWidth
+                  required
                   label="Primary Contact Full Name"
                   value={vendorName}
                   onChange={(e) => {
                     if (onlyText(e.target.value)) setVendorName(e.target.value);
+                    if (fieldErrors.vendorName) setFieldErrors({...fieldErrors, vendorName: ''});
                   }}
+                  error={!!fieldErrors.vendorName}
+                  helperText={fieldErrors.vendorName || ''}
                 />
               </Grid>
 
@@ -247,9 +288,15 @@ const handleCopyBilling = (checked) => {
                     },
                   }}
                   fullWidth
+                  required
                   label="Company Name"
                   value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
+                  onChange={(e) => {
+                    setCompanyName(e.target.value);
+                    if (fieldErrors.companyName) setFieldErrors({...fieldErrors, companyName: ''});
+                  }}
+                  error={!!fieldErrors.companyName}
+                  helperText={fieldErrors.companyName || ''}
                 />
               </Grid>
 
@@ -303,7 +350,10 @@ const handleCopyBilling = (checked) => {
                   value={email}
                   onChange={(e) => {
                     if (emailChars(e.target.value)) setEmail(e.target.value);
+                    if (fieldErrors.email) setFieldErrors({...fieldErrors, email: ''});
                   }}
+                  error={!!fieldErrors.email}
+                  helperText={fieldErrors.email || ''}
                 />
               </Grid>
 
@@ -330,7 +380,10 @@ const handleCopyBilling = (checked) => {
                   value={companyPhone}
                   onChange={(e) => {
                     if (onlyNumbers(e.target.value)) setCompanyPhone(e.target.value);
+                    if (fieldErrors.companyPhone) setFieldErrors({...fieldErrors, companyPhone: ''});
                   }}
+                  error={!!fieldErrors.companyPhone}
+                  helperText={fieldErrors.companyPhone || ''}
                 />
               </Grid>
 
@@ -358,7 +411,10 @@ const handleCopyBilling = (checked) => {
                   onChange={(e) => {
                     const val = e.target.value.toUpperCase();
                     if (panFormat(val)) setPanNumber(val);
+                    if (fieldErrors.panNumber) setFieldErrors({...fieldErrors, panNumber: ''});
                   }}
+                  error={!!fieldErrors.panNumber}
+                  helperText={fieldErrors.panNumber || ''}
                 />
               </Grid>
 
@@ -386,7 +442,10 @@ const handleCopyBilling = (checked) => {
                   onChange={(e) => {
                     const val = e.target.value.toUpperCase();
                     if (gstFormat(val)) setGstNumber(val);
+                    if (fieldErrors.gstNumber) setFieldErrors({...fieldErrors, gstNumber: ''});
                   }}
+                  error={!!fieldErrors.gstNumber}
+                  helperText={fieldErrors.gstNumber || ''}
                 />
               </Grid>
             </Grid>
@@ -420,17 +479,23 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Recipient Name"
                         value={billingRecipient}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setBillingRecipient(e.target.value);
+                          if (fieldErrors.billingRecipient) setFieldErrors({...fieldErrors, billingRecipient: ''});
                         }}
+                        error={!!fieldErrors.billingRecipient}
+                        helperText={fieldErrors.billingRecipient || ''}
                       />
                     </Grid>
 
                     <Grid item xs={12}>
                       <FormControl
                         fullWidth
+                        required
+                        error={!!fieldErrors.billingCountry}
                         sx={{
                           width: { xs: '100%', sm: '100%', md: 330 },
                           '& .MuiOutlinedInput-root': {
@@ -451,11 +516,19 @@ const handleCopyBilling = (checked) => {
                         <Select
                           label="Country/Region"
                           value={billingCountry}
-                          onChange={(e) => setBillingCountry(e.target.value)}
+                          onChange={(e) => {
+                            setBillingCountry(e.target.value);
+                            if (fieldErrors.billingCountry) setFieldErrors({...fieldErrors, billingCountry: ''});
+                          }}
                         >
                           <MenuItem value="India">India</MenuItem>
                           <MenuItem value="USA">USA</MenuItem>
                         </Select>
+                        {fieldErrors.billingCountry && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                            {fieldErrors.billingCountry}
+                          </Typography>
+                        )}
                       </FormControl>
                     </Grid>
 
@@ -478,9 +551,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Address 1"
                         value={billingAddress1}
-                        onChange={(e) => setBillingAddress1(e.target.value)}
+                        onChange={(e) => {
+                          setBillingAddress1(e.target.value);
+                          if (fieldErrors.billingAddress1) setFieldErrors({...fieldErrors, billingAddress1: ''});
+                        }}
+                        error={!!fieldErrors.billingAddress1}
+                        helperText={fieldErrors.billingAddress1 || ''}
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -526,11 +605,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="City"
                         value={billingCity}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setBillingCity(e.target.value);
+                          if (fieldErrors.billingCity) setFieldErrors({...fieldErrors, billingCity: ''});
                         }}
+                        error={!!fieldErrors.billingCity}
+                        helperText={fieldErrors.billingCity || ''}
                       />
                     </Grid>
 
@@ -553,11 +636,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="State"
                         value={billingState}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setBillingState(e.target.value);
+                          if (fieldErrors.billingState) setFieldErrors({...fieldErrors, billingState: ''});
                         }}
+                        error={!!fieldErrors.billingState}
+                        helperText={fieldErrors.billingState || ''}
                       />
                     </Grid>
 
@@ -580,11 +667,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Pin Code"
                         value={billingPinCode}
                         onChange={(e) => {
                           if (pinCodeFormat(e.target.value)) setBillingPinCode(e.target.value);
+                          if (fieldErrors.billingPinCode) setFieldErrors({...fieldErrors, billingPinCode: ''});
                         }}
+                        error={!!fieldErrors.billingPinCode}
+                        helperText={fieldErrors.billingPinCode || ''}
                       />
                     </Grid>
 
@@ -679,16 +770,22 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Recipient Name"
                         value={shippingRecipient}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setShippingRecipient(e.target.value);
+                          if (fieldErrors.shippingRecipient) setFieldErrors({...fieldErrors, shippingRecipient: ''});
                         }}
+                        error={!!fieldErrors.shippingRecipient}
+                        helperText={fieldErrors.shippingRecipient || ''}
                       />
                     </Grid>
                     <Grid item xs={12}>
                       <FormControl
                         fullWidth
+                        required
+                        error={!!fieldErrors.shippingCountry}
                         sx={{
                           width: { xs: '100%', sm: '100%', md: 330 },
                           '& .MuiOutlinedInput-root': {
@@ -709,11 +806,19 @@ const handleCopyBilling = (checked) => {
                         <Select
                           label="Country/Region"
                           value={shippingCountry}
-                          onChange={(e) => setShippingCountry(e.target.value)}
+                          onChange={(e) => {
+                            setShippingCountry(e.target.value);
+                            if (fieldErrors.shippingCountry) setFieldErrors({...fieldErrors, shippingCountry: ''});
+                          }}
                         >
                           <MenuItem value="India">India</MenuItem>
                           <MenuItem value="USA">USA</MenuItem>
                         </Select>
+                        {fieldErrors.shippingCountry && (
+                          <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                            {fieldErrors.shippingCountry}
+                          </Typography>
+                        )}
                       </FormControl>
                     </Grid>
                     <Grid item xs={12}>
@@ -734,9 +839,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Address 1"
                         value={shippingAddress1}
-                        onChange={(e) => setShippingAddress1(e.target.value)}
+                        onChange={(e) => {
+                          setShippingAddress1(e.target.value);
+                          if (fieldErrors.shippingAddress1) setFieldErrors({...fieldErrors, shippingAddress1: ''});
+                        }}
+                        error={!!fieldErrors.shippingAddress1}
+                        helperText={fieldErrors.shippingAddress1 || ''}
                       />
                     </Grid>
                     <Grid item xs={12}>
@@ -780,11 +891,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="City"
                         value={shippingCity}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setShippingCity(e.target.value);
+                          if (fieldErrors.shippingCity) setFieldErrors({...fieldErrors, shippingCity: ''});
                         }}
+                        error={!!fieldErrors.shippingCity}
+                        helperText={fieldErrors.shippingCity || ''}
                       />
                     </Grid>
                     <Grid item xs={6}>
@@ -805,11 +920,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="State"
                         value={shippingState}
                         onChange={(e) => {
                           if (onlyText(e.target.value)) setShippingState(e.target.value);
+                          if (fieldErrors.shippingState) setFieldErrors({...fieldErrors, shippingState: ''});
                         }}
+                        error={!!fieldErrors.shippingState}
+                        helperText={fieldErrors.shippingState || ''}
                       />
                     </Grid>
                     <Grid item xs={6}>
@@ -830,11 +949,15 @@ const handleCopyBilling = (checked) => {
                           },
                         }}
                         fullWidth
+                        required
                         label="Pin Code"
                         value={shippingPinCode}
                         onChange={(e) => {
                           if (pinCodeFormat(e.target.value)) setShippingPinCode(e.target.value);
+                          if (fieldErrors.shippingPinCode) setFieldErrors({...fieldErrors, shippingPinCode: ''});
                         }}
+                        error={!!fieldErrors.shippingPinCode}
+                        helperText={fieldErrors.shippingPinCode || ''}
                       />
                     </Grid>
                     <Grid item xs={6}>
@@ -916,11 +1039,15 @@ const handleCopyBilling = (checked) => {
                       },
                     }}
                     fullWidth
+                    required
                     label="Account Holder Name"
                     value={accountHolderName}
                     onChange={(e) => {
                       if (onlyText(e.target.value)) setAccountHolderName(e.target.value);
+                      if (fieldErrors.accountHolderName) setFieldErrors({...fieldErrors, accountHolderName: ''});
                     }}
+                    error={!!fieldErrors.accountHolderName}
+                    helperText={fieldErrors.accountHolderName || ''}
                   />
                 </Grid>
 
@@ -943,9 +1070,15 @@ const handleCopyBilling = (checked) => {
                       },
                     }}
                     fullWidth
+                    required
                     label="Bank Name"
                     value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
+                    onChange={(e) => {
+                      setBankName(e.target.value);
+                      if (fieldErrors.bankName) setFieldErrors({...fieldErrors, bankName: ''});
+                    }}
+                    error={!!fieldErrors.bankName}
+                    helperText={fieldErrors.bankName || ''}
                   />
                 </Grid>
 
@@ -968,11 +1101,15 @@ const handleCopyBilling = (checked) => {
                       },
                     }}
                     fullWidth
+                    required
                     label="Account Number"
                     value={accountNumber}
                     onChange={(e) => {
                       if (onlyNumbers(e.target.value)) setAccountNumber(e.target.value);
+                      if (fieldErrors.accountNumber) setFieldErrors({...fieldErrors, accountNumber: ''});
                     }}
+                    error={!!fieldErrors.accountNumber}
+                    helperText={fieldErrors.accountNumber || ''}
                   />
                 </Grid>
 
@@ -1018,12 +1155,16 @@ const handleCopyBilling = (checked) => {
                       },
                     }}
                     fullWidth
+                    required
                     label="IFSC"
                     value={ifscCode}
                     onChange={(e) => {
                       const val = e.target.value.toUpperCase();
                       if (ifscFormat(val)) setIfscCode(val);
+                      if (fieldErrors.ifscCode) setFieldErrors({...fieldErrors, ifscCode: ''});
                     }}
+                    error={!!fieldErrors.ifscCode}
+                    helperText={fieldErrors.ifscCode || ''}
                   />
                 </Grid>
 

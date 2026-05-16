@@ -56,6 +56,7 @@ const PurchaseOrderForm = () => {
   ]);
   const [attachment, setAttachment] = useState(null);
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     // Fetch vendors
@@ -148,20 +149,52 @@ const PurchaseOrderForm = () => {
     setAttachment(file);
   };
 
+  const validate = () => {
+    const e = {};
+    if (!purchaseOrderNo || !purchaseOrderNo.trim()) e.purchaseOrderNo = "Purchase Order No is required";
+    
+    if (!selectedVendor) e.selectedVendor = "Vendor is required";
+    
+    if (!purchaseOrderDate) e.purchaseOrderDate = "Purchase order date is required";
+    
+    if (!deliveryDate) e.deliveryDate = "Delivery date is required";
+    else if (new Date(deliveryDate) < new Date(purchaseOrderDate)) e.deliveryDate = "Delivery date cannot be before PO date";
+    
+    if (!dueDate) e.dueDate = "Due date is required";
+    else if (new Date(dueDate) < new Date(purchaseOrderDate)) e.dueDate = "Due date cannot be before PO date";
+
+    if (freight !== "" && (isNaN(freight) || parseFloat(freight) < 0)) e.freight = "Freight must be a positive number";
+
+    if (customerNotes && customerNotes.length > 500) e.customerNotes = "Notes cannot exceed 500 characters";
+    if (termsAndConditions && termsAndConditions.length > 2000) e.termsAndConditions = "Terms cannot exceed 2000 characters";
+
+    if (rows.length === 0) e.items = "At least one item is required";
+    else {
+      let hasInvalidItem = false;
+      rows.forEach((row) => {
+        if (!row.item || row.qty <= 0 || row.rate < 0 || row.discount < 0 || row.discount > 100) {
+          hasInvalidItem = true;
+        }
+      });
+      if (hasInvalidItem) {
+        e.items = "All items must have a selected product, valid qty (>0), rate (>=0), and discount (0-100)";
+      }
+    }
+    return e;
+  };
+
   const handleSaveAndSend = async (saveAsDraft = false) => {
-    // Basic validation
-    if (!selectedVendor) {
-      alert('Please select a vendor');
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      if (validationErrors.items) {
+        alert(validationErrors.items);
+      } else {
+        alert("Please correct the highlighted errors");
+      }
       return;
     }
-    if (!purchaseOrderDate) {
-      alert('Please select a purchase order date');
-      return;
-    }
-    if (rows.length === 0 || rows.every(row => !row.item)) {
-      alert('Please add at least one item');
-      return;
-    }
+    setFieldErrors({});
 
     const vendorObj = vendors.find((v) => v.vendor_name === selectedVendor);
     console.log('Creating purchase order with vendor:', vendorObj);
@@ -282,7 +315,12 @@ const PurchaseOrderForm = () => {
                   fullWidth
                   label="Purchase Order*"
                   value={purchaseOrderNo}
-                  onChange={(e) => setPurchaseOrderNo(e.target.value)}
+                  onChange={(e) => {
+                    setPurchaseOrderNo(e.target.value);
+                    if (fieldErrors.purchaseOrderNo) setFieldErrors({ ...fieldErrors, purchaseOrderNo: '' });
+                  }}
+                  error={!!fieldErrors.purchaseOrderNo}
+                  helperText={fieldErrors.purchaseOrderNo || ''}
                   sx={{
                     width: 500,
                     "& .MuiOutlinedInput-root": {
@@ -319,11 +357,15 @@ const PurchaseOrderForm = () => {
                       },
                     }}
                     required
+                    error={!!fieldErrors.selectedVendor}
                   >
                     <InputLabel>Vendor Name</InputLabel>
                     <Select
                       value={selectedVendor}
-                      onChange={(e) => setSelectedVendor(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedVendor(e.target.value);
+                        if (fieldErrors.selectedVendor) setFieldErrors({ ...fieldErrors, selectedVendor: '' });
+                      }}
                       displayEmpty
                     >
                       <MenuItem value=""></MenuItem>
@@ -340,6 +382,11 @@ const PurchaseOrderForm = () => {
                         ))
                       )}
                     </Select>
+                    {fieldErrors.selectedVendor && (
+                      <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                        {fieldErrors.selectedVendor}
+                      </Typography>
+                    )}
                   </FormControl>
                   <Box mt={1}>
                     <Button
@@ -357,7 +404,12 @@ const PurchaseOrderForm = () => {
                     label="Purchase Order Date*"
                     type="date"
                     value={purchaseOrderDate}
-                    onChange={(e) => setPurchaseOrderDate(e.target.value)}
+                    onChange={(e) => {
+                      setPurchaseOrderDate(e.target.value);
+                      if (fieldErrors.purchaseOrderDate) setFieldErrors({ ...fieldErrors, purchaseOrderDate: '' });
+                    }}
+                    error={!!fieldErrors.purchaseOrderDate}
+                    helperText={fieldErrors.purchaseOrderDate || ''}
                     InputLabelProps={{ shrink: true }}
                     sx={{
                       width: 150,
@@ -372,10 +424,15 @@ const PurchaseOrderForm = () => {
                 <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
-                    label="Delivery Date"
+                    label="Delivery Date*"
                     type="date"
                     value={deliveryDate}
-                    onChange={(e) => setDeliveryDate(e.target.value)}
+                    onChange={(e) => {
+                      setDeliveryDate(e.target.value);
+                      if (fieldErrors.deliveryDate) setFieldErrors({ ...fieldErrors, deliveryDate: '' });
+                    }}
+                    error={!!fieldErrors.deliveryDate}
+                    helperText={fieldErrors.deliveryDate || ''}
                     InputLabelProps={{ shrink: true }}
                     sx={{
                       width: 150,
@@ -416,10 +473,15 @@ const PurchaseOrderForm = () => {
                 <Grid item xs={12} sm={4}>
                   <TextField
                     fullWidth
-                    label="Due Date"
+                    label="Due Date*"
                     type="date"
                     value={dueDate}
-                    onChange={(e) => setDueDate(e.target.value)}
+                    onChange={(e) => {
+                      setDueDate(e.target.value);
+                      if (fieldErrors.dueDate) setFieldErrors({ ...fieldErrors, dueDate: '' });
+                    }}
+                    error={!!fieldErrors.dueDate}
+                    helperText={fieldErrors.dueDate || ''}
                     InputLabelProps={{ shrink: true }}
                     sx={{
                       width: 150,
@@ -612,8 +674,12 @@ const PurchaseOrderForm = () => {
                   rows={4}
                   label="Vendor Notes"
                   value={customerNotes}
-                  onChange={(e) => setCustomerNotes(e.target.value)}
-                  helperText="Will be displayed on the purchase order"
+                  onChange={(e) => {
+                    setCustomerNotes(e.target.value);
+                    if (fieldErrors.customerNotes) setFieldErrors({ ...fieldErrors, customerNotes: '' });
+                  }}
+                  error={!!fieldErrors.customerNotes}
+                  helperText={fieldErrors.customerNotes || "Will be displayed on the purchase order"}
                   sx={{ bgcolor: "#f9fafb", borderRadius: 1, width: 500 }}
                     />
                   </Paper>
@@ -669,7 +735,12 @@ const PurchaseOrderForm = () => {
                   label="Freight"
                   type="number"
                   value={freight}
-                  onChange={(e) => setFreight(e.target.value)}
+                  onChange={(e) => {
+                    setFreight(e.target.value);
+                    if (fieldErrors.freight) setFieldErrors({ ...fieldErrors, freight: '' });
+                  }}
+                  error={!!fieldErrors.freight}
+                  helperText={fieldErrors.freight || ''}
                   placeholder="Enter freight amount"
                   sx={{ mb: 2 }}
                 />
@@ -704,8 +775,10 @@ const PurchaseOrderForm = () => {
                       return line;
                     });
                     setTermsAndConditions(preservedLines.join('\n'));
+                    if (fieldErrors.termsAndConditions) setFieldErrors({ ...fieldErrors, termsAndConditions: '' });
                   }}
-                  helperText="Will be displayed on the purchase order"
+                  error={!!fieldErrors.termsAndConditions}
+                  helperText={fieldErrors.termsAndConditions || "Will be displayed on the purchase order"}
                 />
                 <Box display="flex" alignItems="center" mt={1}>
                   <Checkbox />

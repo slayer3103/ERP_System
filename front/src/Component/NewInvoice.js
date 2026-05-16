@@ -63,6 +63,7 @@ const NewInvoicePage = () => {
   const [customerBillingStateCode, setCustomerBillingStateCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -185,32 +186,48 @@ const NewInvoicePage = () => {
     console.log("NewInvoice - Using IGST:", igst);
   }
 
-  const handleSubmit = async (saveAsDraft = false) => {
-    // Validation checks
-    const customerObj = customers.find((c) => c.id === selectedCustomer);
-    if (!customerObj) {
-      alert("Please select a customer");
-      return;
-    }
+  const validate = () => {
+    const e = {};
+    if (!invoiceNumber || !invoiceNumber.trim()) e.invoiceNumber = "Invoice Number is required";
+    
+    if (!selectedCustomer) e.selectedCustomer = "Customer is required";
+    
+    if (!invoiceDate) e.invoiceDate = "Invoice date is required";
+    if (!expiryDate) e.expiryDate = "Due date is required";
+    else if (new Date(expiryDate) < new Date(invoiceDate)) e.expiryDate = "Due date cannot be before invoice date";
 
-    if (!invoiceDate) {
-      alert("Please select an invoice date");
-      return;
-    }
+    if (subject && subject.length > 200) e.subject = "Subject cannot exceed 200 characters";
+    
+    if (freight !== "" && (isNaN(freight) || parseFloat(freight) < 0)) e.freight = "Freight must be a positive number";
 
-    if (rows.length === 0) {
-      alert("Please add at least one item to the invoice");
-      return;
-    }
+    if (customerNotes && customerNotes.length > 500) e.customerNotes = "Notes cannot exceed 500 characters";
+    if (termsAndConditions && termsAndConditions.length > 2000) e.termsAndConditions = "Terms cannot exceed 2000 characters";
 
-    // Validate that all rows have required fields
-    for (let i = 0; i < rows.length; i++) {
-      const row = rows[i];
-      if (!row.item || !row.qty || !row.rate) {
-        alert(`Please fill in all required fields for item ${i + 1}`);
-        return;
+    if (rows.length === 0) e.items = "At least one item is required";
+    else {
+      let hasInvalidItem = false;
+      rows.forEach((row) => {
+        if (!row.item || row.qty <= 0 || row.rate < 0 || row.discount < 0 || row.discount > 100) {
+          hasInvalidItem = true;
+        }
+      });
+      if (hasInvalidItem) {
+        e.items = "All items must have a selected product, valid qty (>0), rate (>=0), and discount (0-100)";
       }
     }
+    return e;
+  };
+
+  const handleSubmit = async (saveAsDraft = false) => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      setError(validationErrors.items || "Please correct the highlighted errors");
+      return;
+    }
+    setFieldErrors({});
+
+    const customerObj = customers.find((c) => c.id === selectedCustomer);
 
     setLoading(true);
     setError(null);
@@ -418,8 +435,12 @@ const NewInvoicePage = () => {
                 label="Invoice Number"
                 placeholder="Enter invoice number (e.g., INV-2025-001)"
                 value={invoiceNumber}
-                onChange={(e) => setInvoiceNumber(e.target.value)}
-                helperText="You can edit this number as per your format"
+                onChange={(e) => {
+                  setInvoiceNumber(e.target.value);
+                  if (fieldErrors.invoiceNumber) setFieldErrors({ ...fieldErrors, invoiceNumber: '' });
+                }}
+                error={!!fieldErrors.invoiceNumber}
+                helperText={fieldErrors.invoiceNumber || "You can edit this number as per your format"}
                 sx={{
                   width: 500,
                   "& .MuiOutlinedInput-root": {
@@ -431,12 +452,13 @@ const NewInvoicePage = () => {
             </Grid>
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid item xs={12} sm={6} md={3}>
-                <FormControl fullWidth required>
+                <FormControl fullWidth required error={!!fieldErrors.selectedCustomer}>
                   <InputLabel>Customer Name</InputLabel>
                   <Select
                     value={selectedCustomer}
                     onChange={(e) => {
                       setSelectedCustomer(e.target.value);
+                      if (fieldErrors.selectedCustomer) setFieldErrors({ ...fieldErrors, selectedCustomer: '' });
                       if (e.target.value) {
                         fetchCustomerBillingStateCode(e.target.value);
                       }
@@ -458,6 +480,11 @@ const NewInvoicePage = () => {
                       ))
                     )}
                   </Select>
+                  {fieldErrors.selectedCustomer && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                      {fieldErrors.selectedCustomer}
+                    </Typography>
+                  )}
                 </FormControl>
                 <Box mt={1}>
                   <Button
@@ -476,7 +503,12 @@ const NewInvoicePage = () => {
                   label="Invoice Date"
                   type="date"
                   value={invoiceDate}
-                  onChange={(e) => setInvoiceDate(e.target.value)}
+                  onChange={(e) => {
+                    setInvoiceDate(e.target.value);
+                    if (fieldErrors.invoiceDate) setFieldErrors({ ...fieldErrors, invoiceDate: '' });
+                  }}
+                  error={!!fieldErrors.invoiceDate}
+                  helperText={fieldErrors.invoiceDate || ''}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     sx: {
@@ -508,7 +540,12 @@ const NewInvoicePage = () => {
                   label="Due Date"
                   type="date"
                   value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
+                  onChange={(e) => {
+                    setExpiryDate(e.target.value);
+                    if (fieldErrors.expiryDate) setFieldErrors({ ...fieldErrors, expiryDate: '' });
+                  }}
+                  error={!!fieldErrors.expiryDate}
+                  helperText={fieldErrors.expiryDate || ''}
                   InputLabelProps={{ shrink: true }}
                   InputProps={{
                     sx: {
@@ -527,7 +564,12 @@ const NewInvoicePage = () => {
                   label="Subject"
                   placeholder="Write what this invoice is about"
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  onChange={(e) => {
+                    setSubject(e.target.value);
+                    if (fieldErrors.subject) setFieldErrors({ ...fieldErrors, subject: '' });
+                  }}
+                  error={!!fieldErrors.subject}
+                  helperText={fieldErrors.subject || ''}
                   InputProps={{
                     sx: {
                       bgcolor: "#f9fafb",
@@ -684,8 +726,12 @@ const NewInvoicePage = () => {
                     rows={1}
                     label="Customer Notes"
                     value={customerNotes}
-                    onChange={(e) => setCustomerNotes(e.target.value)}
-                    helperText="Will be displayed on the invoice"
+                    onChange={(e) => {
+                      setCustomerNotes(e.target.value);
+                      if (fieldErrors.customerNotes) setFieldErrors({ ...fieldErrors, customerNotes: '' });
+                    }}
+                    error={!!fieldErrors.customerNotes}
+                    helperText={fieldErrors.customerNotes || "Will be displayed on the invoice"}
                     sx={{ bgcolor: "#f9fafb", borderRadius: 1, width: 500 }}
                   />
                 </Paper>
@@ -741,7 +787,12 @@ const NewInvoicePage = () => {
                 label="Freight"
                 type="number"
                 value={freight}
-                onChange={(e) => setFreight(e.target.value)}
+                onChange={(e) => {
+                  setFreight(e.target.value);
+                  if (fieldErrors.freight) setFieldErrors({ ...fieldErrors, freight: '' });
+                }}
+                error={!!fieldErrors.freight}
+                helperText={fieldErrors.freight || ''}
                 placeholder="Enter freight amount"
                 sx={{ mb: 2 }}
               />
@@ -749,7 +800,12 @@ const NewInvoicePage = () => {
                 fullWidth
                 label="Terms & Conditions"
                 value={termsAndConditions}
-                onChange={(e) => setTermsAndConditions(e.target.value)}
+                onChange={(e) => {
+                  setTermsAndConditions(e.target.value);
+                  if (fieldErrors.termsAndConditions) setFieldErrors({ ...fieldErrors, termsAndConditions: '' });
+                }}
+                error={!!fieldErrors.termsAndConditions}
+                helperText={fieldErrors.termsAndConditions || ''}
               />
               <Box display="flex" alignItems="center" mt={1}>
                 <Checkbox />

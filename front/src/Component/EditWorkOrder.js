@@ -19,6 +19,7 @@ export default function EditWorkOrderPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [customers, setCustomers] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     const fetchWorkOrder = async () => {
@@ -69,10 +70,43 @@ export default function EditWorkOrderPage() {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
+    }
+  };
+
+  const validate = () => {
+    let tempErrors = {};
+    let isValid = true;
+
+    if (!formData.customer_name) {
+      tempErrors.customer_name = 'Customer is required';
+      isValid = false;
+    }
+    if (!formData.work_order_date) {
+      tempErrors.work_order_date = 'Created Date is required';
+      isValid = false;
+    }
+    if (!formData.status) {
+      tempErrors.status = 'Status is required';
+      isValid = false;
+    }
+    if (formData.expiry_date && formData.work_order_date && new Date(formData.expiry_date) < new Date(formData.work_order_date)) {
+      tempErrors.expiry_date = 'Expiry Date cannot be before Created Date';
+      isValid = false;
+    }
+
+    setFieldErrors(tempErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) {
+      alert("Please correct the highlighted errors before saving.");
+      return;
+    }
+    
     setLoading(true);
     setError('');
     try {
@@ -147,7 +181,7 @@ export default function EditWorkOrderPage() {
               margin="normal"
               disabled
             />
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" error={!!fieldErrors.customer_name}>
               <InputLabel>Customer</InputLabel>
               <Select
                 name="customer_name"
@@ -166,6 +200,11 @@ export default function EditWorkOrderPage() {
                   <MenuItem value={formData.customer_name}>{formData.customer_name}</MenuItem>
                 )}
               </Select>
+              {fieldErrors.customer_name && (
+                <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                  {fieldErrors.customer_name}
+                </Typography>
+              )}
             </FormControl>
             <TextField
               fullWidth
@@ -177,6 +216,8 @@ export default function EditWorkOrderPage() {
               margin="normal"
               InputLabelProps={{ shrink: true }}
               required
+              error={!!fieldErrors.work_order_date}
+              helperText={fieldErrors.work_order_date}
             />
             <TextField
               fullWidth
@@ -187,8 +228,10 @@ export default function EditWorkOrderPage() {
               onChange={handleChange}
               margin="normal"
               InputLabelProps={{ shrink: true }}
+              error={!!fieldErrors.expiry_date}
+              helperText={fieldErrors.expiry_date}
             />
-            <FormControl fullWidth margin="normal">
+            <FormControl fullWidth margin="normal" error={!!fieldErrors.status}>
               <InputLabel>Status</InputLabel>
               <Select
                 name="status"
@@ -202,6 +245,11 @@ export default function EditWorkOrderPage() {
                   <MenuItem key={status} value={status}>{status}</MenuItem>
                 ))}
               </Select>
+              {fieldErrors.status && (
+                <Typography variant="caption" color="error" sx={{ ml: 2, mt: 0.5 }}>
+                  {fieldErrors.status}
+                </Typography>
+              )}
             </FormControl>
             <TextField
               fullWidth

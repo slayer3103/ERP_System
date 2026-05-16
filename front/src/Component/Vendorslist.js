@@ -29,6 +29,7 @@ export default function VendorListPage() {
   const [loading, setLoading] = useState(true);
   const [updateLoading, setUpdateLoading] = useState(false);
   const [editLoading, setEditLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState({});
 
   useEffect(() => {
     fetchVendors();
@@ -295,15 +296,30 @@ export default function VendorListPage() {
                     'account_holder_name', 'bank_name', 'account_number', 'ifsc'
                   ];
                   const flatVendor = flattenVendorData(editingVendor);
-                  const missingFields = requiredFields.filter(field => !flatVendor[field]);
-                  if (missingFields.length > 0) {
-                    alert(`Please fill all required fields: ${missingFields.join(', ')}`);
+                  const newFieldErrors = {};
+
+                  requiredFields.forEach(field => {
+                    if (!flatVendor[field]) {
+                      newFieldErrors[field] = 'Required field';
+                    }
+                  });
+
+                  if (editingVendor.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingVendor.email)) {
+                    newFieldErrors.email = 'Invalid email format';
+                  }
+                  
+                  if (editingVendor.phone && !/^\d{10,}$/.test(editingVendor.phone.replace(/\D/g, ''))) {
+                    newFieldErrors.phone = 'Invalid phone format';
+                  }
+
+                  if (Object.keys(newFieldErrors).length > 0) {
+                    setFieldErrors(newFieldErrors);
+                    alert('Please correct the highlighted errors');
                     return;
                   }
-                  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingVendor.email)) {
-                    alert('Invalid email format.');
-                    return;
-                  }
+                  
+                  setFieldErrors({});
+                  
                   try {
                     setUpdateLoading(true);
                     const response = await fetch(`http://localhost:5000/api/vendors/${editingVendor.vendor_id}`, {
@@ -361,12 +377,15 @@ export default function VendorListPage() {
                           key={field}
                           label={label}
                           value={editingVendor[field] || ''}
-                          onChange={(e) => setEditingVendor({ ...editingVendor, [field]: e.target.value })}
+                          onChange={(e) => {
+                            setEditingVendor({ ...editingVendor, [field]: e.target.value });
+                            if (fieldErrors[field]) setFieldErrors({...fieldErrors, [field]: ''});
+                          }}
                           fullWidth
                           sx={{ flex: '1 1 45%' }}
                           required={['vendor_name', 'email', 'phone'].includes(field)}
-                          error={field === 'email' && editingVendor[field] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingVendor[field])}
-                          helperText={field === 'email' && editingVendor[field] && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingVendor[field]) ? 'Invalid email format' : ''}
+                          error={!!fieldErrors[field]}
+                          helperText={fieldErrors[field] || ''}
                         />
                       )
                     ))}
@@ -390,14 +409,20 @@ export default function VendorListPage() {
                         key={field}
                         label={label}
                         value={editingVendor.billing_address?.[field] || ''}
-                        onChange={(e) => setEditingVendor({
-                          ...editingVendor,
-                          billing_address: { ...editingVendor.billing_address, [field]: e.target.value }
-                        })}
+                        onChange={(e) => {
+                          setEditingVendor({
+                            ...editingVendor,
+                            billing_address: { ...editingVendor.billing_address, [field]: e.target.value }
+                          });
+                          const flatField = `billing_${field === 'recipient_name' ? 'recipient_name' : field}`;
+                          if (fieldErrors[flatField]) setFieldErrors({...fieldErrors, [flatField]: ''});
+                        }}
                         fullWidth
                         multiline={multiline}
                         sx={{ flex: '1 1 45%' }}
                         required={['recipient_name', 'country', 'address_line1', 'city', 'state', 'pincode'].includes(field)}
+                        error={!!fieldErrors[`billing_${field === 'recipient_name' ? 'recipient_name' : field}`]}
+                        helperText={fieldErrors[`billing_${field === 'recipient_name' ? 'recipient_name' : field}`] || ''}
                       />
                     ))}
                   </Box>
@@ -420,14 +445,20 @@ export default function VendorListPage() {
                         key={field}
                         label={label}
                         value={editingVendor.shipping_address?.[field] || ''}
-                        onChange={(e) => setEditingVendor({
-                          ...editingVendor,
-                          shipping_address: { ...editingVendor.shipping_address, [field]: e.target.value }
-                        })}
+                        onChange={(e) => {
+                          setEditingVendor({
+                            ...editingVendor,
+                            shipping_address: { ...editingVendor.shipping_address, [field]: e.target.value }
+                          });
+                          const flatField = `shipping_${field === 'recipient_name' ? 'recipient_name' : field}`;
+                          if (fieldErrors[flatField]) setFieldErrors({...fieldErrors, [flatField]: ''});
+                        }}
                         fullWidth
                         multiline={multiline}
                         sx={{ flex: '1 1 45%' }}
                         required={['recipient_name', 'country', 'address_line1', 'city', 'state', 'pincode'].includes(field)}
+                        error={!!fieldErrors[`shipping_${field === 'recipient_name' ? 'recipient_name' : field}`]}
+                        helperText={fieldErrors[`shipping_${field === 'recipient_name' ? 'recipient_name' : field}`] || ''}
                       />
                     ))}
                   </Box>
@@ -445,13 +476,18 @@ export default function VendorListPage() {
                         key={field}
                         label={label}
                         value={editingVendor.bank_details?.[field] || ''}
-                        onChange={(e) => setEditingVendor({
-                          ...editingVendor,
-                          bank_details: { ...editingVendor.bank_details, [field]: e.target.value }
-                        })}
+                        onChange={(e) => {
+                          setEditingVendor({
+                            ...editingVendor,
+                            bank_details: { ...editingVendor.bank_details, [field]: e.target.value }
+                          });
+                          if (fieldErrors[field]) setFieldErrors({...fieldErrors, [field]: ''});
+                        }}
                         fullWidth
                         sx={{ flex: '1 1 45%' }}
                         required
+                        error={!!fieldErrors[field]}
+                        helperText={fieldErrors[field] || ''}
                       />
                     ))}
                   </Box>
