@@ -22,6 +22,7 @@ const EditTax = () => {
     status: 'Active',
     effective_date: new Date()
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     axios.get(`http://localhost:5000/api/taxes/${id}`)
@@ -44,9 +45,23 @@ const EditTax = () => {
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+    if (errors[e.target.name]) setErrors({...errors, [e.target.name]: ''});
   };
 
   const handleUpdate = async () => {
+    const e = {};
+    if (!form.tax_name?.trim()) e.tax_name = 'Tax type is required';
+    if (!form.tax_rate) e.tax_rate = 'Rate is required';
+    else if (isNaN(form.tax_rate) || form.tax_rate < 0 || form.tax_rate > 100) e.tax_rate = 'Rate must be between 0 and 100';
+    if (!form.tax_code?.trim()) e.tax_code = 'Label is required';
+    if (!form.effective_date) e.effective_date = 'Effective date is required';
+
+    if (Object.keys(e).length > 0) {
+      setErrors(e);
+      return;
+    }
+    setErrors({});
+
     try {
       await axios.put(`http://localhost:5000/api/taxes/${id}`, {
         ...form,
@@ -130,6 +145,9 @@ const EditTax = () => {
                     value={form.tax_name}
                     onChange={handleChange}
                     fullWidth
+                    required
+                    error={!!errors.tax_name}
+                    helperText={errors.tax_name || ''}
                     sx={{ flex: 1, minWidth: 220 }}
                   />
 
@@ -140,6 +158,10 @@ const EditTax = () => {
                     onChange={handleChange}
                     type="number"
                     fullWidth
+                    required
+                    inputProps={{ min: 0, max: 100, step: 0.01 }}
+                    error={!!errors.tax_rate}
+                    helperText={errors.tax_rate || ''}
                     sx={{ flex: 1, minWidth: 220 }}
                   />
 
@@ -149,6 +171,9 @@ const EditTax = () => {
                     value={form.tax_code}
                     onChange={handleChange}
                     fullWidth
+                    required
+                    error={!!errors.tax_code}
+                    helperText={errors.tax_code || ''}
                     sx={{ flex: 1, minWidth: 220 }}
                   />
 
@@ -159,6 +184,7 @@ const EditTax = () => {
                     value={form.status}
                     onChange={handleChange}
                     fullWidth
+                    required
                     sx={{ flex: 1, minWidth: 220 }}
                   >
                     <MenuItem value="Active">Active</MenuItem>
@@ -168,10 +194,18 @@ const EditTax = () => {
                   <DatePicker
                     label="Effective Date"
                     value={form.effective_date}
-                    onChange={(newValue) =>
-                      setForm({ ...form, effective_date: newValue })
-                    }
+                    onChange={(newValue) => {
+                      setForm({ ...form, effective_date: newValue });
+                      if (errors.effective_date) setErrors({...errors, effective_date: ''});
+                    }}
                     sx={{ flex: 1, minWidth: 220 }}
+                    slotProps={{
+                      textField: {
+                        required: true,
+                        error: !!errors.effective_date,
+                        helperText: errors.effective_date || ''
+                      }
+                    }}
                   />
                 </Box>
 

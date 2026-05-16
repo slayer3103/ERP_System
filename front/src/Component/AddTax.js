@@ -179,8 +179,18 @@ const AddTax = () => {
                   <DatePicker
                     label="Effective Date"
                     value={date}
-                    onChange={(newValue) => setDate(newValue)}
+                    onChange={(newValue) => {
+                      setDate(newValue);
+                      if (errors.date) setErrors({...errors, date: ''});
+                    }}
                     sx={{ flex: 1, minWidth: 220 }}
+                    slotProps={{
+                      textField: {
+                        required: true,
+                        error: !!errors.date,
+                        helperText: errors.date || ''
+                      }
+                    }}
                   />
                 </Box>
 
