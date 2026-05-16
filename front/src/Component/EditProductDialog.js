@@ -18,6 +18,7 @@ const discountTypes = ["%", "Flat"];
 
 export default function EditProductDialog({ open, onClose, product, onSave }) {
   const [formData, setFormData] = useState({});
+  const [errors, setErrors] = useState({});
   const [taxList, setTaxList] = useState([]);
   const [vendors, setVendors] = useState([]);
 
@@ -51,9 +52,41 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: '' }));
+  };
+
+  const validate = () => {
+    const e = {};
+    if (!formData.product_name || !formData.product_name.trim()) e.product_name = 'Product name is required';
+    if (formData.sale_price && (isNaN(formData.sale_price) || parseFloat(formData.sale_price) < 0))
+      e.sale_price = 'Must be a positive number';
+    if (formData.purchase_price && (isNaN(formData.purchase_price) || parseFloat(formData.purchase_price) < 0))
+      e.purchase_price = 'Must be a positive number';
+    
+    if (formData.sale_discount) {
+      if (isNaN(formData.sale_discount) || parseFloat(formData.sale_discount) < 0) {
+        e.sale_discount = 'Must be a positive number';
+      } else if (formData.sale_discount_type === '%' && parseFloat(formData.sale_discount) > 100) {
+        e.sale_discount = 'Percentage cannot exceed 100';
+      }
+    }
+
+    if (formData.purchase_discount) {
+      if (isNaN(formData.purchase_discount) || parseFloat(formData.purchase_discount) < 0) {
+        e.purchase_discount = 'Must be a positive number';
+      } else if (formData.purchase_discount_type === '%' && parseFloat(formData.purchase_discount) > 100) {
+        e.purchase_discount = 'Percentage cannot exceed 100';
+      }
+    }
+    return e;
   };
 
   const handleSave = () => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
     onSave(formData);
   };
 
@@ -69,6 +102,9 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
               name="product_name"
               value={formData.product_name || ""}
               onChange={handleChange}
+              error={!!errors.product_name}
+              helperText={errors.product_name || ''}
+              required
             />
           </Grid>
 
@@ -171,6 +207,9 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
               type="number"
               value={formData.sale_price || ""}
               onChange={handleChange}
+              error={!!errors.sale_price}
+              helperText={errors.sale_price || ''}
+              inputProps={{ min: 0 }}
             />
           </Grid>
 
@@ -182,6 +221,9 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
               type="number"
               value={formData.sale_discount || ""}
               onChange={handleChange}
+              error={!!errors.sale_discount}
+              helperText={errors.sale_discount || ''}
+              inputProps={{ min: 0 }}
             />
           </Grid>
 
@@ -222,6 +264,9 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
               type="number"
               value={formData.purchase_price || ""}
               onChange={handleChange}
+              error={!!errors.purchase_price}
+              helperText={errors.purchase_price || ''}
+              inputProps={{ min: 0 }}
             />
           </Grid>
 
@@ -233,6 +278,9 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
               type="number"
               value={formData.purchase_discount || ""}
               onChange={handleChange}
+              error={!!errors.purchase_discount}
+              helperText={errors.purchase_discount || ''}
+              inputProps={{ min: 0 }}
             />
           </Grid>
 

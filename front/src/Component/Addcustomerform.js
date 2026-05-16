@@ -49,24 +49,49 @@ const AddCustomerForm = () => {
 
   const validate = () => {
     const e = {};
-    if (!formData.customer_name.trim())
-      e.customer_name = 'Customer name is required';
-    if (!formData.display_name.trim())
-      e.display_name = 'Display name is required';
-    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))
-      e.email = 'Invalid email format';
-    if (formData.mobile && !/^\d{10}$/.test(formData.mobile))
-      e.mobile = 'Mobile must be 10 digits';
-    if (formData.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan.toUpperCase()))
-      e.pan = 'Invalid PAN (e.g. ABCDE1234F)';
-    if (formData.gst && !/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$/.test(formData.gst.toUpperCase()))
-      e.gst = 'Invalid GST (e.g. 27ABCDE1234F1Z5)';
-    if (formData.billing_pincode && !/^\d{6}$/.test(formData.billing_pincode))
-      e.billing_pincode = 'Pincode must be 6 digits';
-    if (formData.shipping_pincode && !/^\d{6}$/.test(formData.shipping_pincode))
-      e.shipping_pincode = 'Pincode must be 6 digits';
-    if (formData.billing_state_code && !/^\d{1,2}$/.test(formData.billing_state_code))
-      e.billing_state_code = 'State code must be numeric (e.g. 27)';
+    // Basic Information
+    if (!formData.customer_name || !formData.customer_name.trim()) e.customer_name = 'Customer name is required';
+    else if (formData.customer_name.trim().length < 2) e.customer_name = 'Must be at least 2 characters';
+    
+    if (!formData.display_name || !formData.display_name.trim()) e.display_name = 'Display name is required';
+    else if (formData.display_name.trim().length < 2) e.display_name = 'Must be at least 2 characters';
+    
+    if (formData.company_name && formData.company_name.trim().length < 2) e.company_name = 'Must be at least 2 characters';
+
+    // Contact Information
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) e.email = 'Invalid email format';
+    if (formData.mobile && !/^\d{10}$/.test(formData.mobile)) e.mobile = 'Mobile must be exactly 10 digits';
+    if (formData.office_no && !/^\d{8,15}$/.test(formData.office_no)) e.office_no = 'Office number must be 8-15 digits';
+
+    // Tax Information
+    if (formData.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(formData.pan.toUpperCase())) e.pan = 'Invalid PAN (e.g. ABCDE1234F)';
+    if (formData.gst && !/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$/.test(formData.gst.toUpperCase())) e.gst = 'Invalid GST format';
+
+    // Billing Address Validation
+    if (formData.billing_recipient_name && formData.billing_recipient_name.trim().length < 2) e.billing_recipient_name = 'Must be at least 2 characters';
+    if (formData.billing_address1 && formData.billing_address1.trim().length < 5) e.billing_address1 = 'Address must be at least 5 characters';
+    if (formData.billing_country && !/^[a-zA-Z\s]+$/.test(formData.billing_country)) e.billing_country = 'Country must contain only letters';
+    if (formData.billing_state && !/^[a-zA-Z\s]+$/.test(formData.billing_state)) e.billing_state = 'State must contain only letters';
+    if (formData.billing_city && !/^[a-zA-Z\s]+$/.test(formData.billing_city)) e.billing_city = 'City must contain only letters';
+    if (formData.billing_state_code && !/^\d{1,2}$/.test(formData.billing_state_code)) e.billing_state_code = 'State code must be 1-2 digits';
+    if (formData.billing_pincode && !/^\d{6}$/.test(formData.billing_pincode)) e.billing_pincode = 'Pincode must be exactly 6 digits';
+    if (formData.billing_phone && !/^\d{8,15}$/.test(formData.billing_phone)) e.billing_phone = 'Phone must be 8-15 digits';
+    if (formData.billing_fax && !/^\d{8,15}$/.test(formData.billing_fax)) e.billing_fax = 'Fax must be 8-15 digits';
+
+    // Shipping Address Validation
+    if (formData.shipping_recipient_name && formData.shipping_recipient_name.trim().length < 2) e.shipping_recipient_name = 'Must be at least 2 characters';
+    if (formData.shipping_address1 && formData.shipping_address1.trim().length < 5) e.shipping_address1 = 'Address must be at least 5 characters';
+    if (formData.shipping_country && !/^[a-zA-Z\s]+$/.test(formData.shipping_country)) e.shipping_country = 'Country must contain only letters';
+    if (formData.shipping_state && !/^[a-zA-Z\s]+$/.test(formData.shipping_state)) e.shipping_state = 'State must contain only letters';
+    if (formData.shipping_city && !/^[a-zA-Z\s]+$/.test(formData.shipping_city)) e.shipping_city = 'City must contain only letters';
+    if (formData.shipping_state_code && !/^\d{1,2}$/.test(formData.shipping_state_code)) e.shipping_state_code = 'State code must be 1-2 digits';
+    if (formData.shipping_pincode && !/^\d{6}$/.test(formData.shipping_pincode)) e.shipping_pincode = 'Pincode must be exactly 6 digits';
+    if (formData.shipping_phone && !/^\d{8,15}$/.test(formData.shipping_phone)) e.shipping_phone = 'Phone must be 8-15 digits';
+    if (formData.shipping_fax && !/^\d{8,15}$/.test(formData.shipping_fax)) e.shipping_fax = 'Fax must be 8-15 digits';
+
+    // Other Information
+    if (formData.remark && formData.remark.length > 500) e.remark = 'Remark cannot exceed 500 characters';
+    
     return e;
   };
 

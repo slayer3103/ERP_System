@@ -32,6 +32,7 @@ export default function CustomerList() {
     const [openDelete, setOpenDelete] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
     const [editingCustomer, setEditingCustomer] = useState(null);
+    const [editErrors, setEditErrors] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
     const [filterType, setFilterType] = useState('All');
     const navigate = useNavigate();
@@ -70,6 +71,54 @@ export default function CustomerList() {
         setSelectedRow(null);
     };
 
+    const validateEdit = () => {
+        const e = {};
+        // Basic Information
+        if (!editingCustomer.customer_name || !editingCustomer.customer_name.trim()) e.customer_name = 'Customer name is required';
+        else if (editingCustomer.customer_name.trim().length < 2) e.customer_name = 'Must be at least 2 characters';
+        
+        if (!editingCustomer.display_name || !editingCustomer.display_name.trim()) e.display_name = 'Display name is required';
+        else if (editingCustomer.display_name.trim().length < 2) e.display_name = 'Must be at least 2 characters';
+        
+        if (editingCustomer.company_name && editingCustomer.company_name.trim().length < 2) e.company_name = 'Must be at least 2 characters';
+
+        // Contact Information
+        if (editingCustomer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(editingCustomer.email)) e.email = 'Invalid email format';
+        if (editingCustomer.mobile && !/^\d{10}$/.test(editingCustomer.mobile)) e.mobile = 'Mobile must be exactly 10 digits';
+        if (editingCustomer.office_no && !/^\d{8,15}$/.test(editingCustomer.office_no)) e.office_no = 'Office number must be 8-15 digits';
+
+        // Tax Information
+        if (editingCustomer.pan && !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(editingCustomer.pan.toUpperCase())) e.pan = 'Invalid PAN (e.g. ABCDE1234F)';
+        if (editingCustomer.gst && !/^\d{2}[A-Z]{5}\d{4}[A-Z]{1}[A-Z\d]{1}[Z]{1}[A-Z\d]{1}$/.test(editingCustomer.gst.toUpperCase())) e.gst = 'Invalid GST format';
+
+        // Billing Address Validation
+        if (editingCustomer.billing_recipient_name && editingCustomer.billing_recipient_name.trim().length < 2) e.billing_recipient_name = 'Must be at least 2 characters';
+        if (editingCustomer.billing_address1 && editingCustomer.billing_address1.trim().length < 5) e.billing_address1 = 'Address must be at least 5 characters';
+        if (editingCustomer.billing_country && !/^[a-zA-Z\s]+$/.test(editingCustomer.billing_country)) e.billing_country = 'Country must contain only letters';
+        if (editingCustomer.billing_state && !/^[a-zA-Z\s]+$/.test(editingCustomer.billing_state)) e.billing_state = 'State must contain only letters';
+        if (editingCustomer.billing_city && !/^[a-zA-Z\s]+$/.test(editingCustomer.billing_city)) e.billing_city = 'City must contain only letters';
+        if (editingCustomer.billing_state_code && !/^\d{1,2}$/.test(editingCustomer.billing_state_code)) e.billing_state_code = 'State code must be 1-2 digits';
+        if (editingCustomer.billing_pincode && !/^\d{6}$/.test(editingCustomer.billing_pincode)) e.billing_pincode = 'Pincode must be exactly 6 digits';
+        if (editingCustomer.billing_phone && !/^\d{8,15}$/.test(editingCustomer.billing_phone)) e.billing_phone = 'Phone must be 8-15 digits';
+        if (editingCustomer.billing_fax && !/^\d{8,15}$/.test(editingCustomer.billing_fax)) e.billing_fax = 'Fax must be 8-15 digits';
+
+        // Shipping Address Validation
+        if (editingCustomer.shipping_recipient_name && editingCustomer.shipping_recipient_name.trim().length < 2) e.shipping_recipient_name = 'Must be at least 2 characters';
+        if (editingCustomer.shipping_address1 && editingCustomer.shipping_address1.trim().length < 5) e.shipping_address1 = 'Address must be at least 5 characters';
+        if (editingCustomer.shipping_country && !/^[a-zA-Z\s]+$/.test(editingCustomer.shipping_country)) e.shipping_country = 'Country must contain only letters';
+        if (editingCustomer.shipping_state && !/^[a-zA-Z\s]+$/.test(editingCustomer.shipping_state)) e.shipping_state = 'State must contain only letters';
+        if (editingCustomer.shipping_city && !/^[a-zA-Z\s]+$/.test(editingCustomer.shipping_city)) e.shipping_city = 'City must contain only letters';
+        if (editingCustomer.shipping_state_code && !/^\d{1,2}$/.test(editingCustomer.shipping_state_code)) e.shipping_state_code = 'State code must be 1-2 digits';
+        if (editingCustomer.shipping_pincode && !/^\d{6}$/.test(editingCustomer.shipping_pincode)) e.shipping_pincode = 'Pincode must be exactly 6 digits';
+        if (editingCustomer.shipping_phone && !/^\d{8,15}$/.test(editingCustomer.shipping_phone)) e.shipping_phone = 'Phone must be 8-15 digits';
+        if (editingCustomer.shipping_fax && !/^\d{8,15}$/.test(editingCustomer.shipping_fax)) e.shipping_fax = 'Fax must be 8-15 digits';
+
+        // Other Information
+        if (editingCustomer.remark && editingCustomer.remark.length > 500) e.remark = 'Remark cannot exceed 500 characters';
+        
+        return e;
+    };
+
     const handleSelectAll = (e) => {
         if (e.target.checked) {
             setSelectedCustomers(customers.map((c) => c.id));
@@ -86,12 +135,14 @@ export default function CustomerList() {
 
     const handleEditClick = (customer) => {
         setEditingCustomer(customer);
+        setEditErrors({});
         setEditModalOpen(true);
     };
 
     const handleEditClose = () => {
         setEditModalOpen(false);
         setEditingCustomer(null);
+        setEditErrors({});
     };
 
     const toggleCustomerStatus = async (customer) => {
@@ -208,6 +259,11 @@ export default function CustomerList() {
                     {editingCustomer && (
                         <form onSubmit={async (e) => {
                             e.preventDefault();
+                            const validationErrs = validateEdit();
+                            if (Object.keys(validationErrs).length > 0) {
+                                setEditErrors(validationErrs);
+                                return;
+                            }
                             try {
                                 await fetch(`http://localhost:5000/api/customers/${editingCustomer.id}`, {
                                     method: 'PUT',
@@ -246,9 +302,14 @@ export default function CustomerList() {
                                             select
                                             label={label}
                                             value={editingCustomer[field] || ''}
-                                            onChange={(e) => setEditingCustomer({ ...editingCustomer, [field]: e.target.value })}
+                                            onChange={(e) => {
+                                                setEditingCustomer({ ...editingCustomer, [field]: e.target.value });
+                                                if (editErrors[field]) setEditErrors({ ...editErrors, [field]: '' });
+                                            }}
                                             fullWidth
                                             sx={{ flex: '1 1 45%' }}
+                                            error={!!editErrors[field]}
+                                            helperText={editErrors[field] || ''}
                                         >
                                             <MenuItem value="">Select {label}</MenuItem>
                                             {options.map(opt => (
@@ -260,9 +321,15 @@ export default function CustomerList() {
                                             key={field}
                                             label={label}
                                             value={editingCustomer[field] || ''}
-                                            onChange={(e) => setEditingCustomer({ ...editingCustomer, [field]: e.target.value })}
+                                            onChange={(e) => {
+                                                const val = (field === 'pan' || field === 'gst') ? e.target.value.toUpperCase() : e.target.value;
+                                                setEditingCustomer({ ...editingCustomer, [field]: val });
+                                                if (editErrors[field]) setEditErrors({ ...editErrors, [field]: '' });
+                                            }}
                                             fullWidth
                                             sx={{ flex: '1 1 45%' }}
+                                            error={!!editErrors[field]}
+                                            helperText={editErrors[field] || ''}
                                         />
                                     )
                                 ))}
@@ -279,10 +346,15 @@ export default function CustomerList() {
                                         key={field}
                                         label={field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                                         value={editingCustomer[field] || ''}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, [field]: e.target.value })}
+                                        onChange={(e) => {
+                                            setEditingCustomer({ ...editingCustomer, [field]: e.target.value });
+                                            if (editErrors[field]) setEditErrors({ ...editErrors, [field]: '' });
+                                        }}
                                         fullWidth
                                         multiline={field.includes('address')}
                                         sx={{ flex: '1 1 45%' }}
+                                        error={!!editErrors[field]}
+                                        helperText={editErrors[field] || ''}
                                     />
                                 ))}
                             </Box>
@@ -298,10 +370,15 @@ export default function CustomerList() {
                                         key={field}
                                         label={field.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}
                                         value={editingCustomer[field] || ''}
-                                        onChange={(e) => setEditingCustomer({ ...editingCustomer, [field]: e.target.value })}
+                                        onChange={(e) => {
+                                            setEditingCustomer({ ...editingCustomer, [field]: e.target.value });
+                                            if (editErrors[field]) setEditErrors({ ...editErrors, [field]: '' });
+                                        }}
                                         fullWidth
                                         multiline={field.includes('address')}
                                         sx={{ flex: '1 1 45%' }}
+                                        error={!!editErrors[field]}
+                                        helperText={editErrors[field] || ''}
                                     />
                                 ))}
                             </Box>

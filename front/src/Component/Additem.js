@@ -107,15 +107,27 @@ export default function AddItems() {
 
   const validate = () => {
     const e = {};
-    if (!formData.product_name.trim())  e.product_name = 'Product name is required';
+    if (!formData.product_name || !formData.product_name.trim()) e.product_name = 'Product name is required';
     if (formData.sale_price && (isNaN(formData.sale_price) || parseFloat(formData.sale_price) < 0))
       e.sale_price = 'Must be a positive number';
     if (formData.purchase_price && (isNaN(formData.purchase_price) || parseFloat(formData.purchase_price) < 0))
       e.purchase_price = 'Must be a positive number';
-    if (formData.sale_discount && (parseFloat(formData.sale_discount) < 0 || parseFloat(formData.sale_discount) > 100))
-      e.sale_discount = 'Must be between 0 and 100';
-    if (formData.purchase_discount && (parseFloat(formData.purchase_discount) < 0 || parseFloat(formData.purchase_discount) > 100))
-      e.purchase_discount = 'Must be between 0 and 100';
+    
+    if (formData.sale_discount) {
+      if (isNaN(formData.sale_discount) || parseFloat(formData.sale_discount) < 0) {
+        e.sale_discount = 'Must be a positive number';
+      } else if (formData.sale_discount_type === '%' && parseFloat(formData.sale_discount) > 100) {
+        e.sale_discount = 'Percentage cannot exceed 100';
+      }
+    }
+
+    if (formData.purchase_discount) {
+      if (isNaN(formData.purchase_discount) || parseFloat(formData.purchase_discount) < 0) {
+        e.purchase_discount = 'Must be a positive number';
+      } else if (formData.purchase_discount_type === '%' && parseFloat(formData.purchase_discount) > 100) {
+        e.purchase_discount = 'Percentage cannot exceed 100';
+      }
+    }
     return e;
   };
 

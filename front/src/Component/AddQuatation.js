@@ -83,6 +83,7 @@ export default function NewQuotation() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [fieldErrors, setFieldErrors] = useState({});
   const [products, setProducts] = useState([]);
   const [itemModalOpen, setItemModalOpen] = useState(false);
   const [itemSearchTerm, setItemSearchTerm] = useState("");
@@ -225,24 +226,44 @@ export default function NewQuotation() {
     setAttachment(file);
   };
 
-  const handleSubmit = async (saveAsDraft = false) => {
-    if (!customerName) {
-      setError("Customer name is required");
-      return;
-    }
-    if (!quoteDate) {
-      setError("Quote date is required");
-      return;
-    }
-    if (!expiryDate) {
-      setError("Expiry date is required");
-      return;
-    }
-    if (rows.length === 0 || rows.every((row) => !row.itemId)) {
-      setError("At least one item with details is required");
-      return;
-    }
+  const validate = () => {
+    const e = {};
+    if (!customerName) e.customerName = "Customer name is required";
+    if (!quoteDate) e.quoteDate = "Quote date is required";
+    if (!expiryDate) e.expiryDate = "Expiry date is required";
+    else if (new Date(expiryDate) < new Date(quoteDate)) e.expiryDate = "Expiry date cannot be before quote date";
 
+    if (subject && subject.length > 200) e.subject = "Subject cannot exceed 200 characters";
+    
+    if (freight !== "" && (isNaN(freight) || parseFloat(freight) < 0)) e.freight = "Freight must be a positive number";
+
+    if (customerNotes && customerNotes.length > 500) e.customerNotes = "Notes cannot exceed 500 characters";
+    if (termsAndConditions && termsAndConditions.length > 2000) e.termsAndConditions = "Terms cannot exceed 2000 characters";
+
+    if (rows.length === 0) e.items = "At least one item is required";
+    else {
+      let hasInvalidItem = false;
+      rows.forEach((row) => {
+        if (!row.itemId || row.qty <= 0 || row.rate < 0 || row.discount < 0 || row.discount > 100) {
+          hasInvalidItem = true;
+        }
+      });
+      if (hasInvalidItem) {
+        e.items = "All items must have a selected product, valid qty (>0), rate (>=0), and discount (0-100)";
+      }
+    }
+    return e;
+  };
+
+  const handleSubmit = async (saveAsDraft = false) => {
+    const validationErrors = validate();
+    if (Object.keys(validationErrors).length > 0) {
+      setFieldErrors(validationErrors);
+      setError(validationErrors.items || "Please correct the highlighted errors");
+      return;
+    }
+    
+    setFieldErrors({});
     setLoading(true);
     setError("");
     setSuccess("");
@@ -405,6 +426,7 @@ export default function NewQuotation() {
               <Grid item xs={12} sm={6} md={3}>
                 <FormControl
                   fullWidth
+                  error={!!fieldErrors.customerName}
                   sx={{
                     width: { xs: "100%", sm: "100%", md: 400 },
                     "& .MuiOutlinedInput-root": {
@@ -420,6 +442,7 @@ export default function NewQuotation() {
                     onChange={(e) => {
                       const selectedCustomerName = e.target.value;
                       setCustomerName(selectedCustomerName);
+                      if (fieldErrors.customerName) setFieldErrors({ ...fieldErrors, customerName: '' });
                       fetchCustomerBillingStateCode(selectedCustomerName);
                     }}
                   >
@@ -435,6 +458,11 @@ export default function NewQuotation() {
                       </MenuItem>
                     ))}
                   </Select>
+                  {fieldErrors.customerName && (
+                    <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1 }}>
+                      {fieldErrors.customerName}
+                    </Typography>
+                  )}
                 </FormControl>
                 
               </Grid>
@@ -444,7 +472,12 @@ export default function NewQuotation() {
                   type="date"
                   fullWidth
                   value={quoteDate}
-                  onChange={(e) => setQuoteDate(e.target.value)}
+                  onChange={(e) => {
+                    setQuoteDate(e.target.value);
+                    if (fieldErrors.quoteDate) setFieldErrors({ ...fieldErrors, quoteDate: '' });
+                  }}
+                  error={!!fieldErrors.quoteDate}
+                  helperText={fieldErrors.quoteDate || ''}
                   InputLabelProps={{ shrink: true }}
                   sx={{
                     width: { xs: "100%", sm: "100%", md: 400 },
@@ -462,7 +495,12 @@ export default function NewQuotation() {
                   type="date"
                   fullWidth
                   value={expiryDate}
-                  onChange={(e) => setExpiryDate(e.target.value)}
+                  onChange={(e) => {
+                    setExpiryDate(e.target.value);
+                    if (fieldErrors.expiryDate) setFieldErrors({ ...fieldErrors, expiryDate: '' });
+                  }}
+                  error={!!fieldErrors.expiryDate}
+                  helperText={fieldErrors.expiryDate || ''}
                   InputLabelProps={{ shrink: true }}
                   sx={{
                     width: { xs: "100%", sm: "100%", md: 400 },
@@ -480,7 +518,12 @@ export default function NewQuotation() {
                   fullWidth
                   placeholder="Write what this quotation is about"
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  onChange={(e) => {
+                    setSubject(e.target.value);
+                    if (fieldErrors.subject) setFieldErrors({ ...fieldErrors, subject: '' });
+                  }}
+                  error={!!fieldErrors.subject}
+                  helperText={fieldErrors.subject || ''}
                   sx={{
                     width: { xs: "100%", sm: "100%", md: 400 },
                     "& .MuiOutlinedInput-root": {
@@ -678,8 +721,12 @@ export default function NewQuotation() {
                       rows={1}
                       label="Customer Notes"
                       value={customerNotes}
-                      onChange={(e) => setCustomerNotes(e.target.value)}
-                      helperText="Will be displayed on the quotation"
+                      onChange={(e) => {
+                        setCustomerNotes(e.target.value);
+                        if (fieldErrors.customerNotes) setFieldErrors({ ...fieldErrors, customerNotes: '' });
+                      }}
+                      error={!!fieldErrors.customerNotes}
+                      helperText={fieldErrors.customerNotes || "Will be displayed on the quotation"}
                       sx={{ bgcolor: "#f9fafb", borderRadius: 1, width: 500 }}
                     />
                   </Paper>
@@ -687,10 +734,14 @@ export default function NewQuotation() {
                     <TextField
                       multiline
                       rows={1}
-                      label="Add: Freigh"
+                      label="Add: Freight"
                       value={freight}
-                      onChange={(e) => setFreight(e.target.value)}
-        
+                      onChange={(e) => {
+                        setFreight(e.target.value);
+                        if (fieldErrors.freight) setFieldErrors({ ...fieldErrors, freight: '' });
+                      }}
+                      error={!!fieldErrors.freight}
+                      helperText={fieldErrors.freight || ''}
                       sx={{ bgcolor: "#f9fafb", borderRadius: 1, width: 500 }}
                     />
                   </Paper>
@@ -766,7 +817,10 @@ export default function NewQuotation() {
                   }}
                   onChange={(e) => {
                     setTermsAndConditions(e.target.value);
+                    if (fieldErrors.termsAndConditions) setFieldErrors({ ...fieldErrors, termsAndConditions: '' });
                   }}
+                  error={!!fieldErrors.termsAndConditions}
+                  helperText={fieldErrors.termsAndConditions || ''}
                   multiline
                   rows={8}
                   placeholder="Enter terms and conditions here..."
