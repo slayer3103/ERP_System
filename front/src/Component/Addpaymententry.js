@@ -34,6 +34,7 @@ const AddPaymentsEntry = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
 
   // Fetch invoices on component mount
   useEffect(() => {
@@ -67,36 +68,72 @@ const AddPaymentsEntry = () => {
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    // Frontend validations
-    if (!selectedInvoice) { setError('Please select an invoice'); return; }
-    if (!paymentDate)      { setError('Payment date is required'); return; }
-    if (!amount)           { setError('Amount is required'); return; }
-
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      setError('Amount must be greater than 0'); return;
+  const validate = () => {
+    let tempErrors = {};
+    let isValid = true;
+    
+    if (!selectedInvoice) {
+      tempErrors.selectedInvoice = 'Please select an invoice';
+      isValid = false;
+    }
+    if (!paymentDate) {
+      tempErrors.paymentDate = 'Payment date is required';
+      isValid = false;
+    }
+    if (!paymentMode) {
+      tempErrors.paymentMode = 'Payment mode is required';
+      isValid = false;
+    }
+    if (!currency) {
+      tempErrors.currency = 'Currency is required';
+      isValid = false;
+    }
+    
+    if (!amount) {
+      tempErrors.amount = 'Amount is required';
+      isValid = false;
+    } else {
+      const amountNum = parseFloat(amount);
+      if (isNaN(amountNum) || amountNum <= 0) {
+        tempErrors.amount = 'Amount must be greater than 0';
+        isValid = false;
+      } else if (invoiceDetails) {
+        const grandTotal = parseFloat(invoiceDetails.invoice.grand_total);
+        if (amountNum > grandTotal) {
+          tempErrors.amount = `Amount cannot exceed invoice total of ₹${grandTotal.toFixed(2)}`;
+          isValid = false;
+        }
+      }
     }
 
     const today = new Date().toISOString().split('T')[0];
-    if (paymentDate > today) {
-      setError('Payment date cannot be in the future'); return;
+    if (paymentDate && paymentDate > today) {
+      tempErrors.paymentDate = 'Payment date cannot be in the future';
+      isValid = false;
     }
 
-    if (invoiceDetails) {
+    if (invoiceDetails && paymentDate) {
       const invoiceDate = new Date(invoiceDetails.invoice.invoice_date).toISOString().split('T')[0];
       if (paymentDate < invoiceDate) {
-        setError('Payment date cannot be before invoice date'); return;
-      }
-      const grandTotal = parseFloat(invoiceDetails.invoice.grand_total);
-      if (amountNum > grandTotal) {
-        setError(`Amount cannot exceed invoice total of ₹${grandTotal.toFixed(2)}`); return;
+        tempErrors.paymentDate = 'Payment date cannot be before invoice date';
+        isValid = false;
       }
       if (invoiceDetails.invoice.status === 'Paid') {
-        setError('This invoice is already fully paid'); return;
+        tempErrors.selectedInvoice = 'This invoice is already fully paid';
+        isValid = false;
       }
+    }
+
+    setFieldErrors(tempErrors);
+    return isValid;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!validate()) {
+      setError('Please resolve the errors highlighted below.');
+      return;
     }
 
     setLoading(true);
@@ -249,7 +286,12 @@ const AddPaymentsEntry = () => {
                     required
                     label="Invoice No"
                     value={selectedInvoice}
-                    onChange={(e) => handleInvoiceChange(e.target.value)}
+                    onChange={(e) => {
+                      handleInvoiceChange(e.target.value);
+                      if (fieldErrors.selectedInvoice) setFieldErrors({ ...fieldErrors, selectedInvoice: '' });
+                    }}
+                    error={!!fieldErrors.selectedInvoice}
+                    helperText={fieldErrors.selectedInvoice}
                     sx={{
                         width: { xs: '100%', sm: '100%', md: 330 },
                         '& .MuiOutlinedInput-root': {
@@ -283,7 +325,12 @@ const AddPaymentsEntry = () => {
                     label="Payment Date"
                     type="date"
                     value={paymentDate}
-                    onChange={(e) => setPaymentDate(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentDate(e.target.value);
+                      if (fieldErrors.paymentDate) setFieldErrors({ ...fieldErrors, paymentDate: '' });
+                    }}
+                    error={!!fieldErrors.paymentDate}
+                    helperText={fieldErrors.paymentDate}
                     InputLabelProps={{ shrink: true }}
                     sx={{
                         width: { xs: '100%', sm: '100%', md: 330 },
@@ -309,7 +356,12 @@ const AddPaymentsEntry = () => {
                     required 
                     label="Payment Mode"
                     value={paymentMode}
-                    onChange={(e) => setPaymentMode(e.target.value)}
+                    onChange={(e) => {
+                      setPaymentMode(e.target.value);
+                      if (fieldErrors.paymentMode) setFieldErrors({ ...fieldErrors, paymentMode: '' });
+                    }}
+                    error={!!fieldErrors.paymentMode}
+                    helperText={fieldErrors.paymentMode}
                     sx={{
                         width: { xs: '100%', sm: '100%', md: 330 },
                         '& .MuiOutlinedInput-root': {
@@ -337,7 +389,12 @@ const AddPaymentsEntry = () => {
                     required 
                     label="Currency Preference"
                     value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
+                    onChange={(e) => {
+                      setCurrency(e.target.value);
+                      if (fieldErrors.currency) setFieldErrors({ ...fieldErrors, currency: '' });
+                    }}
+                    error={!!fieldErrors.currency}
+                    helperText={fieldErrors.currency}
                     sx={{
                         width: { xs: '100%', sm: '100%', md: 330 },
                         '& .MuiOutlinedInput-root': {
@@ -366,7 +423,12 @@ const AddPaymentsEntry = () => {
                     placeholder="Enter amount"
                     type="number"
                     value={amount}
-                    onChange={(e) => setAmount(e.target.value)}
+                    onChange={(e) => {
+                      setAmount(e.target.value);
+                      if (fieldErrors.amount) setFieldErrors({ ...fieldErrors, amount: '' });
+                    }}
+                    error={!!fieldErrors.amount}
+                    helperText={fieldErrors.amount}
                     inputProps={{ min: 0, step: 0.01 }}
                     sx={{
                         width: { xs: '100%', sm: '100%', md: 330 },
