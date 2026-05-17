@@ -33,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 import axios from 'axios';
 import ui from "../assets/mera.png"
 import ne from "../assets/new.png"
+import BASE_URL from '../config/api';
 const statusColor = {
   Paid: "success",
   Draft: "default",
@@ -52,7 +53,7 @@ export default function Invoicelist() {
   React.useEffect(() => {
     setLoading(true);
     setError('');
-    axios.get('http://localhost:5000/api/invoice')
+    axios.get(`${BASE_URL}/invoice`)
       .then(res => setInvoices(res.data))
       .catch(() => setError('Failed to fetch invoices'))
       .finally(() => setLoading(false));
@@ -77,7 +78,7 @@ export default function Invoicelist() {
   const handleDownloadPdf = async (invoice) => {
     try {
       // Fetch invoice details, items, and customer
-      const response = await axios.get(`http://localhost:5000/api/invoice/${invoice.invoice_id}`);
+      const response = await axios.get(`${BASE_URL}/invoice/${invoice.invoice_id}`);
       const { invoice: invoiceData, items, customer, sub_total, cgst, sgst, grand_total } = response.data;
 
       if (!customer) {
@@ -1820,7 +1821,7 @@ export default function Invoicelist() {
                             <MenuItem onClick={() => handleShareLink(row)}><ShareIcon fontSize="small" sx={{ mr: 1 }} /> Share Link</MenuItem>
                             <MenuItem onClick={async () => {
                               try {
-                                await axios.patch(`http://localhost:5000/api/invoice/${row.invoice_id}/status`, { status: 'Paid' });
+                                await axios.patch(`${BASE_URL}/invoice/${row.invoice_id}/status`, { status: 'Paid' });
                                 setInvoices(prev => prev.map(inv => inv.invoice_id === row.invoice_id ? { ...inv, status: 'Paid' } : inv));
                                 handleMenuClose();
                               } catch (error) {
@@ -1830,7 +1831,7 @@ export default function Invoicelist() {
                             }}>Mark as Paid</MenuItem>
                             <MenuItem onClick={async () => {
                               try {
-                                await axios.patch(`http://localhost:5000/api/invoice/${row.invoice_id}/status`, { status: 'Partial' });
+                                await axios.patch(`${BASE_URL}/invoice/${row.invoice_id}/status`, { status: 'Partial' });
                                 setInvoices(prev => prev.map(inv => inv.invoice_id === row.invoice_id ? { ...inv, status: 'Partial' } : inv));
                                 handleMenuClose();
                               } catch (error) {
@@ -1840,7 +1841,7 @@ export default function Invoicelist() {
                             }}>Mark as Partial</MenuItem>
                             <MenuItem onClick={async () => {
                               try {
-                                await axios.patch(`http://localhost:5000/api/invoice/${row.invoice_id}/status`, { status: 'Draft' });
+                                await axios.patch(`${BASE_URL}/invoice/${row.invoice_id}/status`, { status: 'Draft' });
                                 setInvoices(prev => prev.map(inv => inv.invoice_id === row.invoice_id ? { ...inv, status: 'Draft' } : inv));
                                 handleMenuClose();
                               } catch (error) {

@@ -10,6 +10,7 @@ import Sidebar from './Sidebar';
 import CustomerList from './Customerlist';
 import { useNavigate } from 'react-router-dom';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const illustration = 'https://i0.wp.com/cupofglory.com/wp-content/uploads/2024/11/Subscription-Form.webp?resize=1024,912&ssl=1';
 
@@ -19,7 +20,7 @@ export default function CustomerPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/customers')
+    axios.get(`${BASE_URL}/customers`)
       .then((res) => {
         setCustomers(res.data || []);
         console.log('Fetched customers:', res.data);

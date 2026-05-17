@@ -35,6 +35,7 @@ import Sidebar from "./Sidebar";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const PurchaseOrderForm = () => {
   const navigate = useNavigate();
@@ -61,12 +62,12 @@ const PurchaseOrderForm = () => {
   useEffect(() => {
     // Fetch vendors
     axios
-      .get("http://localhost:5000/api/vendors")
+      .get(`${BASE_URL}/vendors`)
       .then((res) => setVendors(res.data))
       .catch(() => setVendors([]));
 
     // Fetch products
-    fetch("http://localhost:5000/api/products")
+    fetch(`${BASE_URL}/products`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -82,7 +83,7 @@ const PurchaseOrderForm = () => {
       
     // Fetch units
     axios
-      .get("http://localhost:5000/api/product_units")
+      .get(`${BASE_URL}/product_units`)
       .then((res) => setUnits(res.data))
       .catch((error) => {
         console.error("Error fetching units:", error);
@@ -91,7 +92,7 @@ const PurchaseOrderForm = () => {
 
     // Fetch purchase order number (assuming a similar endpoint exists)
     axios
-      .get("http://localhost:5000/api/purchase/next-number")
+      .get(`${BASE_URL}/purchase/next-number`)
       .then((res) => setPurchaseOrderNo(res.data.nextPurchaseOrderNo || ""))
       .catch(() => setPurchaseOrderNo(""));
   }, []);
@@ -229,7 +230,7 @@ const PurchaseOrderForm = () => {
     };
 
     try {
-      await axios.post("http://localhost:5000/api/purchase", payload);
+      await axios.post(`${BASE_URL}/purchase`, payload);
       navigate("/purchase-order-list");
     } catch (error) {
       console.error('Purchase order creation error:', error);
@@ -549,7 +550,7 @@ const PurchaseOrderForm = () => {
                               updateRow(index, "item", selectedProductName);
                               if (selectedProduct) {
                                 fetch(
-                                  `http://localhost:5000/api/products/${selectedProduct.id}`
+                                  `${BASE_URL}/products/${selectedProduct.id}`
                                 )
                                   .then((res) => res.json())
                                   .then((product) => {

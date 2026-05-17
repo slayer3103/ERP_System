@@ -38,6 +38,7 @@ import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import CloseIcon from '@mui/icons-material/Close';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import BASE_URL from '../config/api';
 
 const NewWorkOrder = () => {
   const navigate = useNavigate();
@@ -83,7 +84,7 @@ const NewWorkOrder = () => {
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/vendors')
+    fetch(`${BASE_URL}/vendors`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -99,7 +100,7 @@ const NewWorkOrder = () => {
   }, []);
 
   useEffect(() => {
-    fetch('http://localhost:5000/api/products')
+    fetch(`${BASE_URL}/products`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -115,7 +116,7 @@ const NewWorkOrder = () => {
   }, []);
   
   useEffect(() => {
-    fetch('http://localhost:5000/api/product_units')
+    fetch(`${BASE_URL}/product_units`)
       .then((response) => {
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -270,7 +271,7 @@ const NewWorkOrder = () => {
       })),
     };
 
-    fetch('http://localhost:5000/api/work-orders', {
+    fetch(`${BASE_URL}/work-orders`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(workOrderData),
@@ -618,7 +619,7 @@ const NewWorkOrder = () => {
                             updateRow(index, 'item', selectedProductId);
                             updateRow(index, 'itemName', selectedProduct ? selectedProduct.product_name : '');
                             // Fetch product details by id and update rate
-                            fetch(`http://localhost:5000/api/products/${selectedProductId}`)
+                            fetch(`${BASE_URL}/products/${selectedProductId}`)
                               .then((res) => res.json())
                               .then((product) => {
                                 updateRow(index, 'rate', product.sale_price || 0);

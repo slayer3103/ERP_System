@@ -18,6 +18,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
 import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
+import BASE_URL from '../config/api';
 
 const currencies = ['INR', 'USD', 'EUR'];
 const paymentModes = ['Online', 'Cash', 'Cheque'];
@@ -43,7 +44,7 @@ const AddPaymentsEntry = () => {
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/invoice');
+      const response = await fetch(`${BASE_URL}/invoice`);
       if (!response.ok) throw new Error('Failed to fetch invoices');
       const data = await response.json();
       setInvoices(data);
@@ -56,7 +57,7 @@ const AddPaymentsEntry = () => {
     setSelectedInvoice(invoiceId);
     if (invoiceId) {
       try {
-        const response = await fetch(`http://localhost:5000/api/invoice/${invoiceId}`);
+        const response = await fetch(`${BASE_URL}/invoice/${invoiceId}`);
         if (!response.ok) throw new Error('Failed to fetch invoice details');
         const data = await response.json();
         setInvoiceDetails(data);
@@ -150,7 +151,7 @@ const AddPaymentsEntry = () => {
         amount: parseFloat(amount)
       };
 
-      const response = await fetch('http://localhost:5000/api/payment-entries', {
+      const response = await fetch(`${BASE_URL}/payment-entries`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

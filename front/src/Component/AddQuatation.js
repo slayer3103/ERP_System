@@ -40,6 +40,7 @@ import InputBase from "@mui/material/InputBase";
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import axios from "axios";
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function NewQuotation() {
   const [quoteDate, setQuoteDate] = useState("2025-08-21");
@@ -96,7 +97,7 @@ export default function NewQuotation() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/product_units")
+      .get(`${BASE_URL}/product_units`)
       .then((res) => setUnits(res.data))
       .catch((error) => {
         console.error("Error fetching units:", error);
@@ -106,13 +107,13 @@ export default function NewQuotation() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/customers")
+      .get(`${BASE_URL}/customers`)
       .then((res) => setCustomers(res.data))
       .catch(() => setCustomers([]));
   }, []);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
+    fetch(`${BASE_URL}/products`)
       .then((response) => {
         if (!response.ok) {
           throw new Error("Network response was not ok");
@@ -129,7 +130,7 @@ export default function NewQuotation() {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/quotation/next-number")
+      .get(`${BASE_URL}/quotation/next-number`)
       .then((res) => setQuoteNumber(res.data.nextQuoteNumber))
       .catch(() => setQuoteNumber(""));
   }, []);
@@ -142,7 +143,7 @@ export default function NewQuotation() {
     }
     
     try {
-      const response = await axios.get(`http://localhost:5000/api/customers`);
+      const response = await axios.get(`${BASE_URL}/customers`);
       const customer = response.data.find(c => c.customer_name === customerName);
       if (customer) {
         console.log("Found customer:", customer);
@@ -300,7 +301,7 @@ export default function NewQuotation() {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/quotation",
+        `${BASE_URL}/quotation`,
         {
           quotation: quotationData,
           // Send items in the shape the backend expects (item_detail, quantity, rate, discount, amount)
@@ -593,7 +594,7 @@ export default function NewQuotation() {
                               const selectedProductId = e.target.value;
                               updateRow(index, "itemId", selectedProductId);
                               fetch(
-                                `http://localhost:5000/api/products/${selectedProductId}`
+                                `${BASE_URL}/products/${selectedProductId}`
                               )
                                 .then((res) => res.json())
                                 .then((product) => {

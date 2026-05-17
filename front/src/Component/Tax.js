@@ -11,6 +11,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import Taxlist from './Taxlist';
 import axios from 'axios';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function Tax() {
   const [taxes, setTaxes] = useState([]);
@@ -18,7 +19,7 @@ export default function Tax() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/taxes')
+    axios.get(`${BASE_URL}/taxes`)
       .then(res => {
         setTaxes(res.data);
         console.log('Fetched taxes:', res.data);

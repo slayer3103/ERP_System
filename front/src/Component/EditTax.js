@@ -11,6 +11,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const EditTax = () => {
   const { id } = useParams();
@@ -25,7 +26,7 @@ const EditTax = () => {
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
-    axios.get(`http://localhost:5000/api/taxes/${id}`)
+    axios.get(`${BASE_URL}/taxes/${id}`)
       .then((res) => {
         const tax = res.data;
         setForm({
@@ -63,7 +64,7 @@ const EditTax = () => {
     setErrors({});
 
     try {
-      await axios.put(`http://localhost:5000/api/taxes/${id}`, {
+      await axios.put(`${BASE_URL}/taxes/${id}`, {
         ...form,
         effective_date: form.effective_date.toISOString().split("T")[0]
       });

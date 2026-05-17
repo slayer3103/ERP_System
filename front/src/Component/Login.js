@@ -16,6 +16,7 @@ import {
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
 import ui from '../assets/ui.png';
+import BASE_URL from '../config/api';
 
 // Custom styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
@@ -70,7 +71,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

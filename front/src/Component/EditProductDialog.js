@@ -10,6 +10,7 @@ import {
   MenuItem,
 } from "@mui/material";
 import axios from "axios";
+import BASE_URL from '../config/api';
 
 const statusOptions = ["Active", "Inactive"];
 const unitOptions = ["kg", "cm", "pcs", "litre"];
@@ -24,7 +25,7 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/vendors")
+      .get(`${BASE_URL}/vendors`)
       .then((res) => {
         console.log("Vendors loaded:", res.data);
         setVendors(res.data || []);
@@ -40,7 +41,7 @@ export default function EditProductDialog({ open, onClose, product, onSave }) {
       console.log("Product data:", product);
       setFormData(product || {});
       axios
-        .get("http://localhost:5000/api/taxes")
+        .get(`${BASE_URL}/taxes`)
         .then((res) => {
           const activeTaxes = res.data.filter((tax) => tax.status === "Active");
           setTaxList(activeTaxes);

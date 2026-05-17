@@ -6,6 +6,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import axios from 'axios';
+import BASE_URL from '../config/api';
 
 const AddCustomerForm = () => {
   const navigate = useNavigate();
@@ -110,7 +111,7 @@ const AddCustomerForm = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:5000/api/customers', formData);
+      await axios.post(`${BASE_URL}/customers`, formData);
       alert('Customer added successfully!');
       navigate('/customer');
     } catch (error) {

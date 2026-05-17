@@ -10,13 +10,14 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const Vendors = () => {
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
      const navigate=useNavigate()
      useEffect(() => {
-  axios.get('http://localhost:5000/api/vendors')
+  axios.get(`${BASE_URL}/vendors`)
     .then((res) => {
       setVendors(res.data || []);
       console.log('Fetched vendors:', res.data);

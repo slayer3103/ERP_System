@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, TextField, Button, Paper, Typography, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
 import Sidebar from './Sidebar';
 import axios from 'axios';
+import BASE_URL from '../config/api';
 
 export default function EditInvoicePage() {
   const { id } = useParams();
@@ -24,7 +25,7 @@ export default function EditInvoicePage() {
       setLoading(true);
       setError('');
       try {
-        const res = await axios.get(`http://localhost:5000/api/invoice/${id}`);
+        const res = await axios.get(`${BASE_URL}/invoice/${id}`);
         const inv = res.data.invoice;
         setFormData({
           invoice_number: inv.invoice_number,
@@ -44,7 +45,7 @@ export default function EditInvoicePage() {
   }, [id]);
 
   useEffect(() => {
-    axios.get('http://localhost:5000/api/customers')
+    axios.get(`${BASE_URL}/customers`)
       .then(res => setCustomers(res.data))
       .catch(() => setCustomers([]));
   }, []);
@@ -58,7 +59,7 @@ export default function EditInvoicePage() {
     setLoading(true);
     setError('');
     try {
-      await axios.put(`http://localhost:5000/api/invoice/${id}`, {
+      await axios.put(`${BASE_URL}/invoice/${id}`, {
         customer_name: formData.customer_name,
         invoice_date: formData.invoice_date,
         expiry_date: formData.expiry_date,

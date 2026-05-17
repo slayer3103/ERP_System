@@ -28,6 +28,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import axios from 'axios';
 
 import Sidebar from './Sidebar';
+import BASE_URL from '../config/api';
 
 const PaymentsSettings = () => {
   const navigate = useNavigate();
@@ -44,7 +45,7 @@ const PaymentsSettings = () => {
   const fetchPayments = async () => {
     try {
       setLoading(true);
-      const response = await axios.get('http://localhost:5000/api/payment-entries');
+      const response = await axios.get(`${BASE_URL}/payment-entries`);
       setPayments(response.data);
       setError('');
     } catch (err) {
@@ -88,7 +89,7 @@ const PaymentsSettings = () => {
         newRemainingBalance = selectedPayment.invoice_total - selectedPayment.amount;
       }
       
-      await axios.put(`http://localhost:5000/api/payment-entries/${selectedPayment.payment_id}`, {
+      await axios.put(`${BASE_URL}/payment-entries/${selectedPayment.payment_id}`, {
         payment_date: selectedPayment.payment_date,
         payment_mode: selectedPayment.payment_mode,
         currency: selectedPayment.currency,

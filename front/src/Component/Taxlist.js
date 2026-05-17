@@ -13,6 +13,7 @@ import Sidebar from './Sidebar';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const Taxlist = () => {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ const Taxlist = () => {
 
   const fetchTaxes = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/taxes');
+      const res = await axios.get(`${BASE_URL}/taxes`);
       setTaxes(res.data);
     } catch (err) {
       console.error("Error fetching taxes:", err);
@@ -55,7 +56,7 @@ const Taxlist = () => {
     const newStatus = selectedRowData.status === 'Active' ? 'Inactive' : 'Active';
 
     try {
-      await axios.patch(`http://localhost:5000/api/taxes/${selectedRowData.id}/status`, {
+      await axios.patch(`${BASE_URL}/taxes/${selectedRowData.id}/status`, {
         status: newStatus
       });
       fetchTaxes();

@@ -26,6 +26,7 @@ import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import axios from "axios";
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function AddItems() {
   const navigate = useNavigate();
@@ -63,7 +64,7 @@ export default function AddItems() {
   // Fetch Units from backend
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/product_units")
+      .get(`${BASE_URL}/product_units`)
       .then((res) => {
         const unitNames = res.data.map(unit => unit.unit_name);
         setUnits(unitNames);
@@ -78,7 +79,7 @@ export default function AddItems() {
   // Fetch Taxes
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/taxes")
+      .get(`${BASE_URL}/taxes`)
       .then((res) => {
         const activeTaxes = res.data.filter((tax) => tax.status === "Active");
         setTaxList(activeTaxes);
@@ -89,7 +90,7 @@ export default function AddItems() {
   // Fetch Vendors
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/vendors")
+      .get(`${BASE_URL}/vendors`)
       .then((res) => setVendors(res.data))
       .catch((err) => {
         console.error("Error fetching vendors:", err);
@@ -143,7 +144,7 @@ export default function AddItems() {
     if (Object.keys(validationErrors).length > 0) { setErrors(validationErrors); return; }
     const dataToSend = { ...formData, sku: generateSKU() };
     try {
-      await axios.post("http://localhost:5000/api/products", dataToSend);
+      await axios.post(`${BASE_URL}/products`, dataToSend);
       navigate("/item-list");
     } catch (error) {
       console.error("Error saving item:", error);
@@ -168,7 +169,7 @@ export default function AddItems() {
       
       try {
         // Save to backend first
-        await axios.post("http://localhost:5000/api/product_units", {
+        await axios.post(`${BASE_URL}/product_units`, {
           unit_name: trimmedUnit
         });
         

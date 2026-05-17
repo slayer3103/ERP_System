@@ -31,6 +31,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import ui from '../assets/mera.png';
 
 import axios from "axios";
+import BASE_URL from '../config/api';
 
 const PurchaseOrderActions = () => {
   const navigate = useNavigate();
@@ -41,7 +42,7 @@ const PurchaseOrderActions = () => {
 
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/purchase")
+      .get(`${BASE_URL}/purchase`)
       .then((res) => {
         console.log("Purchase Orders API Response:", res.data);
         setRows(res.data);
@@ -77,11 +78,11 @@ const PurchaseOrderActions = () => {
     try {
       // Test if backend is reachable
       console.log('Testing API endpoint...');
-      const testResponse = await axios.get('http://localhost:5000/api/purchase');
+      const testResponse = await axios.get(`${BASE_URL}/purchase`);
       console.log('API test successful:', testResponse.status);
       
       // Fetch purchase order data from backend API using purchase order number instead of ID
-      const response = await axios.get(`http://localhost:5000/api/purchase/${order.purchase_order_no}`);
+      const response = await axios.get(`${BASE_URL}/purchase/${order.purchase_order_no}`);
       console.log('Purchase order data fetched:', response.data);
       
       const { purchase_order: poData, vendor } = response.data;

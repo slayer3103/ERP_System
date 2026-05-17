@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Box, TextField, Button, Paper, Typography, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import Sidebar from "./Sidebar";
 import axios from 'axios';
+import BASE_URL from '../config/api';
 
 export default function EditWorkOrderPage() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function EditWorkOrderPage() {
       setLoading(true);
       setError('');
       try {
-        const res = await axios.get(`http://localhost:5000/api/work-orders/${id}`);
+        const res = await axios.get(`${BASE_URL}/work-orders/${id}`);
         if (!res.data) {
           throw new Error('No data returned from server');
         }
@@ -56,7 +57,7 @@ export default function EditWorkOrderPage() {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/customers');
+        const res = await axios.get(`${BASE_URL}/customers`);
         console.log("📦 Customers from backend:", res.data);
         setCustomers(Array.isArray(res.data) ? res.data : res.data.data || []);
       } catch (err) {
@@ -110,7 +111,7 @@ export default function EditWorkOrderPage() {
     setLoading(true);
     setError('');
     try {
-      await axios.put(`http://localhost:5000/api/work-orders/${id}`, {
+      await axios.put(`${BASE_URL}/work-orders/${id}`, {
         customer_name: formData.customer_name,
         work_order_number: formData.work_order_number,
         work_order_date: formData.work_order_date,

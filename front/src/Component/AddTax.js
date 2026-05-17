@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const AddTax = () => {
   const [taxType, setTaxType] = useState("GST");
@@ -50,7 +51,7 @@ const AddTax = () => {
 
 
     try {
-      await axios.post("http://localhost:5000/api/taxes", payload);
+      await axios.post(`${BASE_URL}/taxes`, payload);
       alert("Tax added successfully!");
       navigate("/tax"); // Go back to tax list
     } catch (err) {

@@ -9,8 +9,9 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import axios from 'axios';
 import Sidebar from './Sidebar';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
-const API = 'http://localhost:5000/api';
+const API = `${BASE_URL}`;
 
 // Each report key maps to: a title, the endpoint(s) to fetch, and how to
 // transform the raw rows into table { columns, rows }.

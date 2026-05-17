@@ -34,6 +34,7 @@ import autoTable from "jspdf-autotable";
 import axios from "axios";
 import UserMenu from "./UserMenu";
 import ui from '../assets/mera.png';
+import BASE_URL from '../config/api';
 
 export default function QuotationListPage() {
   const navigator = useNavigate();
@@ -56,7 +57,7 @@ export default function QuotationListPage() {
       setLoading(true);
       setError("");
       try {
-        const res = await axios.get("http://localhost:5000/api/quotation");
+        const res = await axios.get(`${BASE_URL}/quotation`);
         setQuotations(res.data);
       } catch (err) {
         setError("Failed to fetch quotations");
@@ -73,13 +74,13 @@ export default function QuotationListPage() {
    const handlePrintQuotation = async () => {
   if (!selectedQuote) return;
   try {
-    const res = await axios.get(`http://localhost:5000/api/quotation/${selectedQuote.quotation_id}`);
+    const res = await axios.get(`${BASE_URL}/quotation/${selectedQuote.quotation_id}`);
     const { quotation, items, sub_total, cgst, sgst, grand_total } = res.data;
 
     // Fetch customers and find the one used in this quotation by name
     let customerData = null;
     try {
-      const customersRes = await axios.get('http://localhost:5000/api/customers');
+      const customersRes = await axios.get(`${BASE_URL}/customers`);
       customerData = (customersRes.data || []).find((c) => c.customer_name === quotation.customer_name) || null;
     } catch (e) {
       // ignore, fallback to quotation fields
@@ -606,7 +607,7 @@ export default function QuotationListPage() {
       return;
     try {
       await axios.delete(
-        `http://localhost:5000/api/quotation/${selectedQuote.quotation_id}`
+        `${BASE_URL}/quotation/${selectedQuote.quotation_id}`
       );
       setQuotations((prev) =>
         prev.filter((q) => q.quotation_id !== selectedQuote.quotation_id)
@@ -880,7 +881,7 @@ export default function QuotationListPage() {
                     const newStatus = selectedQuote.status === "Sent" ? "Draft" : "Sent";
                     try {
                       await axios.put(
-                        `http://localhost:5000/api/quotation/${selectedQuote.quotation_id}`,
+                        `${BASE_URL}/quotation/${selectedQuote.quotation_id}`,
                         { status: newStatus }
                       );
                       setQuotations((prev) =>

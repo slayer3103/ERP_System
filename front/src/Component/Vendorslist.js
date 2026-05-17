@@ -16,6 +16,7 @@ import { useNavigate } from 'react-router-dom';
 import { grey } from '@mui/material/colors';
 import UserMenu from './UserMenu';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
+import BASE_URL from '../config/api';
 
 export default function VendorListPage() {
   const navigate = useNavigate();
@@ -38,7 +39,7 @@ export default function VendorListPage() {
   const fetchVendors = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/vendors');
+      const response = await fetch(`${BASE_URL}/vendors`);
       if (!response.ok) throw new Error('Failed to fetch vendors');
       const data = await response.json();
       console.log('Backend vendor list:', data); // Debug: Log raw backend data
@@ -103,7 +104,7 @@ export default function VendorListPage() {
   const handleEditVendor = async (vendor) => {
     try {
       setEditLoading(true);
-      const response = await fetch(`http://localhost:5000/api/vendors/${vendor.vendor_id}`);
+      const response = await fetch(`${BASE_URL}/vendors/${vendor.vendor_id}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch vendor details');
@@ -179,7 +180,7 @@ export default function VendorListPage() {
 
   const confirmDelete = async () => {
     try {
-      const response = await fetch(`http://localhost:5000/api/vendors/${selectedVendor.vendor_id}`, {
+      const response = await fetch(`${BASE_URL}/vendors/${selectedVendor.vendor_id}`, {
         method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete vendor');
@@ -322,7 +323,7 @@ export default function VendorListPage() {
                   
                   try {
                     setUpdateLoading(true);
-                    const response = await fetch(`http://localhost:5000/api/vendors/${editingVendor.vendor_id}`, {
+                    const response = await fetch(`${BASE_URL}/vendors/${editingVendor.vendor_id}`, {
                       method: 'PUT',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify(flatVendor),

@@ -15,6 +15,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import EditProductDialog from './EditProductDialog'; // Add this at the top
+import BASE_URL from '../config/api';
 
 
 
@@ -30,14 +31,14 @@ export default function ItemList() {
   const handleStatusChange = async (id, newStatus) => {
     try {
       // Step 1: Fetch the full product data
-      const res = await axios.get(`http://localhost:5000/api/products/${id}`);
+      const res = await axios.get(`${BASE_URL}/products/${id}`);
       const fullProduct = res.data;
 
       // Step 2: Update only the status
       fullProduct.status = newStatus;
 
       // Step 3: Send the complete data back via PUT
-      await axios.put(`http://localhost:5000/api/products/${id}`, fullProduct);
+      await axios.put(`${BASE_URL}/products/${id}`, fullProduct);
 
       // Step 4: Update frontend state or reload
       fetchItems();
@@ -55,11 +56,11 @@ export default function ItemList() {
   // Save changes
   const handleEditSave = async (updatedData) => {
     try {
-      await axios.put(`http://localhost:5000/api/products/${updatedData.id}`, updatedData);
+      await axios.put(`${BASE_URL}/products/${updatedData.id}`, updatedData);
       setEditDialogOpen(false);
       setProductToEdit(null);
       // Refresh data
-      const res = await axios.get('http://localhost:5000/api/products');
+      const res = await axios.get(`${BASE_URL}/products`);
       setItems(res.data);
     } catch (err) {
       console.error('Edit failed:', err);
@@ -71,7 +72,7 @@ export default function ItemList() {
 
   const fetchItems = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/products');
+      const res = await axios.get(`${BASE_URL}/products`);
       setItems(res.data);
     } catch (err) {
       console.error('Error fetching items:', err);

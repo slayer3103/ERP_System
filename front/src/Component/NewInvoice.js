@@ -38,6 +38,7 @@ import { useNavigate } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import axios from "axios";
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 const NewInvoicePage = () => {
   const navigate = useNavigate();
@@ -73,10 +74,10 @@ const NewInvoicePage = () => {
       try {
         // Fetch all data in parallel
         const [customersRes, invoiceNumberRes, productsRes, unitsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/customers", { timeout: 10000 }),
-          axios.get("http://localhost:5000/api/invoice/next-number", { timeout: 10000 }),
-          axios.get("http://localhost:5000/api/products", { timeout: 10000 }),
-          axios.get("http://localhost:5000/api/units", { timeout: 10000 })
+          axios.get(`${BASE_URL}/customers`, { timeout: 10000 }),
+          axios.get(`${BASE_URL}/invoice/next-number`, { timeout: 10000 }),
+          axios.get(`${BASE_URL}/products`, { timeout: 10000 }),
+          axios.get(`${BASE_URL}/units`, { timeout: 10000 })
         ]);
         
         console.log('Customers response:', customersRes.data);
@@ -128,7 +129,7 @@ const NewInvoicePage = () => {
 
   const fetchCustomerBillingStateCode = async (customerId) => {
     try {
-      const response = await axios.get(`http://localhost:5000/api/customers/${customerId}`);
+      const response = await axios.get(`${BASE_URL}/customers/${customerId}`);
       const customer = response.data;
       setCustomerBillingStateCode(customer.billing_state_code || "");
     } catch (error) {
@@ -262,7 +263,7 @@ const NewInvoicePage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/invoice",
+        `${BASE_URL}/invoice`,
         {
           invoice: invoiceData,
           items: invoiceData.items,
@@ -627,7 +628,7 @@ const NewInvoicePage = () => {
                             const selectedProduct = products.find(p => p.id === selectedProductId);
                             updateRow(index, "item", selectedProductId);
                             updateRow(index, "item_name", selectedProduct ? selectedProduct.product_name : "");
-                            fetch(`http://localhost:5000/api/products/${selectedProductId}`)
+                            fetch(`${BASE_URL}/products/${selectedProductId}`)
                               .then((res) => res.json())
                               .then((product) => {
                                 updateRow(index, "rate", product.sale_price || 0);

@@ -4,6 +4,7 @@ import { Box, TextField, Button, Paper, Typography, MenuItem, FormControl, Input
 import Sidebar from './Sidebar';
 import UserMenu from './UserMenu';
 import axios from 'axios';
+import BASE_URL from '../config/api';
 
 export default function EditPurchaseOrderPage() {
   const { id } = useParams();
@@ -36,7 +37,7 @@ export default function EditPurchaseOrderPage() {
   useEffect(() => {
     const fetchPurchaseOrder = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/purchase/${id}`);
+        const res = await axios.get(`${BASE_URL}/purchase/${id}`);
         const po = res.data.purchase_order;
         setFormData({
           purchase_order_number: po.purchase_order_no || '',
@@ -68,7 +69,7 @@ export default function EditPurchaseOrderPage() {
 
   // Fetch vendor list
   useEffect(() => {
-    axios.get('http://localhost:5000/api/vendors')
+    axios.get(`${BASE_URL}/vendors`)
       .then(res => setVendors(res.data))
       .catch(() => setVendors([]));
   }, []);
@@ -105,7 +106,7 @@ export default function EditPurchaseOrderPage() {
     setLoading(true);
     setError('');
     try {
-      const response = await axios.put(`http://localhost:5000/api/purchase/${id}`, {
+      const response = await axios.put(`${BASE_URL}/purchase/${id}`, {
         purchase_order_no: formData.purchase_order_number,
         vendor_name: formData.vendor_name,
         purchase_order_date: formData.created_date,

@@ -22,6 +22,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function CustomerList() {
     const [customers, setCustomers] = useState([]);
@@ -51,7 +52,7 @@ export default function CustomerList() {
 
     const fetchCustomers = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/customers');
+            const res = await fetch(`${BASE_URL}/customers`);
             const data = await res.json();
             setCustomers(data);
         } catch (err) {
@@ -148,7 +149,7 @@ export default function CustomerList() {
     const toggleCustomerStatus = async (customer) => {
         const newStatus = customer.status === 'Active' ? 'Inactive' : 'Active';
         try {
-            const response = await fetch(`http://localhost:5000/api/customers/${customer.id}/status`, {
+            const response = await fetch(`${BASE_URL}/customers/${customer.id}/status`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus })
@@ -265,7 +266,7 @@ export default function CustomerList() {
                                 return;
                             }
                             try {
-                                await fetch(`http://localhost:5000/api/customers/${editingCustomer.id}`, {
+                                await fetch(`${BASE_URL}/customers/${editingCustomer.id}`, {
                                     method: 'PUT',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify(editingCustomer),

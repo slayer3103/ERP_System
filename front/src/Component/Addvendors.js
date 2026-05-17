@@ -12,6 +12,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import axios from 'axios';
 import { useState } from 'react';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function NewVendorForm() {
   const navigate = useNavigate();
@@ -69,7 +70,7 @@ const handleCopyBilling = (checked) => {
   }
 };
 
-  const API_URL = "http://localhost:5000/api/vendors";
+  const API_URL = `${BASE_URL}/vendors`;
 
   const validate = () => {
     const e = {};

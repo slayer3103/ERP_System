@@ -10,6 +10,7 @@ import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import ItemList from './Itemlist';
 import axios from 'axios';
 import UserMenu from './UserMenu';
+import BASE_URL from '../config/api';
 
 export default function ItemsPage() {
   const navigate = useNavigate();
@@ -18,7 +19,7 @@ export default function ItemsPage() {
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/products');
+        const res = await axios.get(`${BASE_URL}/products`);
         console.log('Full response:', res.data);
         setItems(res.data); // Adjust based on your API response structure
       } catch (error) {
