@@ -10,7 +10,7 @@ const cors = require('cors');
 
 app.use(cors({
   origin: [
-    "erp-system-git-main-saurabhshendurkar3103-8214s-projects.vercel.app"
+    "https://erp-system-as6ukav32-saurabhshendurkar3103-8214s-projects.vercel.app"
   ],
   credentials: true
 }));
