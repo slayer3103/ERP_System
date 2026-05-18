@@ -11,6 +11,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "ERP System",
   description: "Modern Enterprise Resource Planning System",
+  manifest: "/manifest.json",
 }
 
 export const viewport: Viewport = {

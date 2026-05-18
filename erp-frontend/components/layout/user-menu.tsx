@@ -10,9 +10,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { LogOut, User, Settings, Building2 } from "lucide-react"
+import { LogOut, User, Settings } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
 export function UserMenu() {
   const { user, clearAuth } = useAuthStore()
@@ -23,13 +24,8 @@ export function UserMenu() {
     router.push("/login")
   }
 
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+  const initials = user?.username
+    ? user.username.slice(0, 2).toUpperCase()
     : "U"
 
   return (
@@ -37,10 +33,6 @@ export function UserMenu() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-9 w-9 rounded-full">
           <Avatar className="size-9">
-            <AvatarImage
-              src={user?.businessLogo}
-              alt={user?.name || "User"}
-            />
             <AvatarFallback className="bg-primary text-primary-foreground text-sm">
               {initials}
             </AvatarFallback>
@@ -50,20 +42,16 @@ export function UserMenu() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{user?.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">
-              {user?.email}
-            </p>
+            <p className="text-sm font-medium leading-none">{user?.username}</p>
+            <Badge variant="secondary" className="w-fit text-xs mt-1">
+              {user?.role}
+            </Badge>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
           <User className="mr-2 size-4" />
           <span>Profile</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Building2 className="mr-2 size-4" />
-          <span>Business Settings</span>
         </DropdownMenuItem>
         <DropdownMenuItem>
           <Settings className="mr-2 size-4" />

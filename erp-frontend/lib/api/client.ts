@@ -18,24 +18,21 @@ class ApiClient {
     options: RequestOptions = {}
   ): Promise<T> {
     const { skipAuth = false, headers: customHeaders, ...restOptions } = options
-    const token = useAuthStore.getState().token
+    const { isAuthenticated } = useAuthStore.getState()
 
     const headers: HeadersInit = {
       "Content-Type": "application/json",
       ...customHeaders,
     }
 
-    if (!skipAuth && token) {
-      ;(headers as Record<string, string>)["Authorization"] = `Bearer ${token}`
-    }
-
     const response = await fetch(`${this.baseUrl}${endpoint}`, {
       ...restOptions,
       headers,
+      credentials: "include", // Include cookies for session-based auth
     })
 
     if (!response.ok) {
-      if (response.status === 401) {
+      if (response.status === 401 && !skipAuth) {
         useAuthStore.getState().clearAuth()
         if (typeof window !== "undefined") {
           window.location.href = "/login"
@@ -46,7 +43,11 @@ class ApiClient {
       throw new Error(error.message || `HTTP error! status: ${response.status}`)
     }
 
-    return response.json()
+    // Handle empty responses
+    const text = await response.text()
+    if (!text) return {} as T
+    
+    return JSON.parse(text)
   }
 
   get<T>(endpoint: string, options?: RequestOptions): Promise<T> {

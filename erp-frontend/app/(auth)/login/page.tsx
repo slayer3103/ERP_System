@@ -18,7 +18,7 @@ import { toast } from "sonner"
 import { Building2, Loader2, Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("")
+  const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,19 +28,21 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!email || !password) {
-      toast.error("Please enter both email and password")
+    if (!username || !password) {
+      toast.error("Please enter both username and password")
       return
     }
 
     setIsLoading(true)
 
     try {
-      const response = await authApi.login({ email, password })
-      setAuth(response.user, response.token)
+      const response = await authApi.login({ username, password })
+      console.log("[v0] Login response:", response)
+      setAuth(response.user)
       toast.success("Welcome back!")
       router.push("/")
     } catch (error) {
+      console.error("[v0] Login error:", error)
       toast.error(error instanceof Error ? error.message : "Login failed")
     } finally {
       setIsLoading(false)
@@ -61,15 +63,15 @@ export default function LoginPage() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="email"
-              type="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              id="username"
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               disabled={isLoading}
-              autoComplete="email"
+              autoComplete="username"
               required
             />
           </div>
@@ -110,10 +112,6 @@ export default function LoginPage() {
             Sign in
           </Button>
         </form>
-        <div className="mt-4 text-center text-sm text-muted-foreground">
-          <p>Demo credentials:</p>
-          <p className="font-mono text-xs">admin@example.com / password123</p>
-        </div>
       </CardContent>
     </Card>
   )

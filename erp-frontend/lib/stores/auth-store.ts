@@ -1,25 +1,26 @@
 import { create } from "zustand"
-import { persist } from "zustand/middleware"
+import { persist, createJSONStorage } from "zustand/middleware"
 import type { User, AuthState } from "@/types/auth"
 
 interface AuthStore extends AuthState {
-  setAuth: (user: User, token: string) => void
+  setAuth: (user: User) => void
   clearAuth: () => void
   setLoading: (loading: boolean) => void
+  _hasHydrated: boolean
+  setHasHydrated: (state: boolean) => void
 }
 
 export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       user: null,
-      token: null,
       isAuthenticated: false,
       isLoading: true,
+      _hasHydrated: false,
 
-      setAuth: (user, token) =>
+      setAuth: (user) =>
         set({
           user,
-          token,
           isAuthenticated: true,
           isLoading: false,
         }),
@@ -27,7 +28,6 @@ export const useAuthStore = create<AuthStore>()(
       clearAuth: () =>
         set({
           user: null,
-          token: null,
           isAuthenticated: false,
           isLoading: false,
         }),
@@ -36,14 +36,23 @@ export const useAuthStore = create<AuthStore>()(
         set({
           isLoading: loading,
         }),
+
+      setHasHydrated: (state) =>
+        set({
+          _hasHydrated: state,
+          isLoading: false,
+        }),
     }),
     {
       name: "erp-auth-storage",
+      storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         user: state.user,
-        token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true)
+      },
     }
   )
 )

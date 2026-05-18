@@ -1,29 +1,24 @@
 export interface User {
-  _id: string
-  name: string
-  email: string
-  role: string
-  businessName?: string
-  businessAddress?: string
-  businessLogo?: string
-  createdAt: string
-  updatedAt: string
+  id: number
+  username: string
+  role: "admin" | "superadmin"
+  status: "Active" | "Inactive"
 }
 
 export interface AuthState {
   user: User | null
-  token: string | null
   isAuthenticated: boolean
   isLoading: boolean
 }
 
 export interface LoginCredentials {
-  email: string
+  username: string
   password: string
+  role?: string
 }
 
 export interface LoginResponse {
-  token: string
+  message: string
   user: User
 }
 

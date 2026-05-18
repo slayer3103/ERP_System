@@ -14,25 +14,24 @@ export default function DashboardLayout({
 }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
-  const { isAuthenticated, isLoading, setLoading } = useAuthStore()
+  const { isAuthenticated, _hasHydrated } = useAuthStore()
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    setLoading(false)
-  }, [setLoading])
-
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
+    // Wait for hydration before checking auth
+    if (_hasHydrated && !isAuthenticated) {
+      console.log("[v0] Not authenticated after hydration, redirecting to login")
       router.push("/login")
     }
-  }, [isAuthenticated, isLoading, router])
+  }, [isAuthenticated, _hasHydrated, router])
 
   useEffect(() => {
     setMobileOpen(false)
   }, [pathname])
 
-  if (isLoading) {
+  // Show loading while hydrating
+  if (!_hasHydrated) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -40,8 +39,13 @@ export default function DashboardLayout({
     )
   }
 
+  // Show nothing if not authenticated (will redirect)
   if (!isAuthenticated) {
-    return null
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    )
   }
 
   return (
