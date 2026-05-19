@@ -10,8 +10,9 @@ const cors = require('cors');
 
 const allowedOrigins = [
   "https://erp-system-as6ukav32-saurabhshendurkar3103-8214s-projects.vercel.app",
-  "https://erp-system-saurabhshendurkar3103-8214s-projects.vercel.app/"
+  "https://erp-system-git-main-saurabhshendurkar3103-8214s-projects.vercel.app"
 ];
+
 
 app.use(cors({
   origin: function(origin, callback) {
