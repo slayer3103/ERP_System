@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../redux/slices/authSlice';
 import ui from '../assets/ui.png';
 import BASE_URL from '../config/api';
 
@@ -61,6 +63,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('');
   const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -90,6 +93,12 @@ const Login = () => {
         localStorage.setItem('userId', data.user.id);
         localStorage.setItem('username', data.user.username);
         
+        // Dispatch to Redux so ProtectedRoute receives the updated state immediately
+        dispatch(loginSuccess({
+          user: data.user,
+          role: data.user.role
+        }));
+
         // Set visible components based on role
         const visibleComponents = data.user.role === 'superadmin' ? 'all' : [
           '/dashboard',

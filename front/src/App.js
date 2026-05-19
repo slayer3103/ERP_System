@@ -70,15 +70,34 @@ const ProtectedRoute = ({ children }) => {
   return children;
 };
 
+// Public Route Component (Redirects logged-in users to dashboard)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated } = useSelector((state) => state.auth);
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Router>
         <FinancialYearGuard />
         <Routes>
-          {/* Public Route */}
-          {/* <Route path="/login" element={<Login />} /> */}
-          <Route path="/" element={<Login/>} />
+          {/* Public Routes */}
+          <Route path="/login" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } />
+          <Route path="/" element={
+            <PublicRoute>
+              <Login />
+            </PublicRoute>
+          } />
 
           {/* Protected Routes */}
           <Route path="/dashboard" element={
