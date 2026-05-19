@@ -8,11 +8,18 @@ const PORT = process.env.PORT || 5000;
 const cors = require('cors');
 
 
+const allowedOrigins = [
+  "https://erp-system-as6ukav32-saurabhshendurkar3103-8214s-projects.vercel.app"
+];
+
 app.use(cors({
-  origin: [
-    "https://erp-system-as6ukav32-saurabhshendurkar3103-8214s-projects.vercel.app",
-    "https://erp-system-one-xi.vercel.app?_vercel_share=GklN9hRSBsYxyvZzaYrrGBc5xFyebr6v"
-  ],
+  origin: function(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
 
